@@ -1,0 +1,29 @@
+# Use Raspberry Pi OS Bookworm as a basis for the custom image.
+#
+# Note that you can also declare your own base layer(s). For examples, see:
+# https://github.com/silitics/rugpi/tree/main/repositories/core/layers
+name = "tedge"
+parent = "core/raspios-bookworm"
+
+# Include recipes for the custom image.
+recipes = [
+    "core/apt-cleanup",
+    "core/persist-root-home",
+    "core/ssh",
+    "rugpi-extra/zsh",
+
+    # thin-edge.io recipes
+    "tedge-rugpi-core/persist-overlay",
+    "tedge-rugpi-core/tedge-firmware-update",
+    "tedge-rugpi-core/set-wifi",
+    "tedge-rugpi-core/mosquitto",
+    "tedge-rugpi-core/sbom",
+
+    "sbom",
+]
+
+[parameters."core/apt-cleanup"]
+autoremove = true
+
+[parameters."core/rugpi-ctrl"]
+rugpi_admin = true
