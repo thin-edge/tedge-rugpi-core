@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-echo "Setting wifi access" >&2
 
 if [ -z "$RECIPE_PARAM_SSID" ]; then
     echo "Skipping wifi configuration as ssid is empty" >&2
@@ -11,7 +10,7 @@ if [ -z "$RECIPE_PARAM_ID" ]; then
     RECIPE_PARAM_ID=wifi
 fi
 
-echo "configurating wifi. id=$RECIPE_PARAM_ID, ssid=$RECIPE_PARAM_SSID" >&2
+echo "Configuring wifi (using NetworkManager). id=$RECIPE_PARAM_ID, ssid=$RECIPE_PARAM_SSID" >&2
 
 cat << EOT > /etc/NetworkManager/system-connections/wifi.nmconnection
 [connection]
