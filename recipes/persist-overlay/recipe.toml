@@ -1,2 +1,2 @@
-description = "Persist general overaly across reboots"
+description = "Persist overlay across reboots"
 default = false
