@@ -18,8 +18,6 @@ recipes = [
     "tedge-rugpi-core/set-wifi",
     "tedge-rugpi-core/mosquitto",
     "tedge-rugpi-core/sbom",
-
-    "sbom",
 ]
 
 [parameters."core/apt-cleanup"]
