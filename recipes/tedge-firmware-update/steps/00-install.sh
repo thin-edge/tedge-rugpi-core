@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -e
 install -D -m 644 "${RECIPE_DIR}/files/tedge-firmware" -t /etc/sudoers.d/
 install -D -m 644 "${RECIPE_DIR}/files/system.toml" -t /etc/tedge/
 install -D -m 644 "${RECIPE_DIR}/files/firmware_update.rugpi.toml" -t /usr/share/tedge-workflows/
@@ -17,3 +17,22 @@ fi
 
 # Use symlink so that the workflow file can be updated within the image
 ln -s /usr/share/tedge-workflows/firmware_update.rugpi.toml /etc/tedge/operations/firmware_update.toml
+
+
+#
+# Add build info
+#
+ENV_FILE="$RUGPI_PROJECT_DIR/.env"
+
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading .env file" >&2
+    # shellcheck disable=SC1090
+    . "$ENV_FILE"
+fi
+
+ARTIFACT_FILE=/etc/.build_info
+if [ -n "$IMAGE_NAME" ]; then
+    echo "Adding build-info: $ARTIFACT_FILE"
+    echo "$IMAGE_NAME" > "$ARTIFACT_FILE"
+    cat "$ARTIFACT_FILE" >&2
+fi
