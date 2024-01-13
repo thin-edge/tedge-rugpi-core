@@ -1,6 +1,6 @@
 description = "thin-edge.io default recipes"
 dependencies = [
-    "core/apt-cleanup",
+    "core/raspberrypi",
     "core/persist-root-home",
     "rugpi-extra/zsh",
 
