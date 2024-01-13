@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+if [ -f "$RUGPI_PROJECT_DIR/.env" ]; then
+    # shellcheck disable=SC1091
+    . "$RUGPI_PROJECT_DIR/.env"
+fi
+
+# Use secret values if the user has not give default values in the [parameters]
+RECIPE_PARAM_ID=${RECIPE_PARAM_ID:-$SECRETS_WIFI_ID}
+RECIPE_PARAM_SSID=${RECIPE_PARAM_SSID:-$SECRETS_WIFI_SSID}
+RECIPE_PARAM_PASSWORD=${RECIPE_PARAM_PASSWORD:-$SECRETS_WIFI_PASSWORD}
+
 if [ -z "$RECIPE_PARAM_SSID" ]; then
     echo "Skipping wifi configuration as ssid is empty" >&2
     exit 0
