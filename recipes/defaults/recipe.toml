@@ -5,11 +5,11 @@ dependencies = [
     "rugpi-extra/zsh",
 
     # thin-edge.io recipes
-    "persist-data",
-    "persist-network-manager",
-    "persist-overlay",
-    "tedge-bootstrap",
-    "tedge-firmware-update",
+    # "persist-data",
+    # "persist-network-manager",
+    # "persist-overlay",
+    # "tedge-bootstrap",
+    # "tedge-firmware-update",
     "x-avahi-daemon",
     "set-wifi",
     "mosquitto",
