@@ -22,17 +22,11 @@ ln -s /usr/share/tedge-workflows/firmware_update.rugpi.toml /etc/tedge/operation
 #
 # Add build info
 #
-ENV_FILE="$RUGPI_PROJECT_DIR/.env"
-
-if [ -f "$ENV_FILE" ]; then
-    echo "Loading .env file" >&2
-    # shellcheck disable=SC1090
-    . "$ENV_FILE"
-fi
-
 ARTIFACT_FILE=/etc/.build_info
-if [ -n "$IMAGE_NAME" ]; then
-    echo "Adding build-info: $ARTIFACT_FILE"
-    echo "$IMAGE_NAME" > "$ARTIFACT_FILE"
+BUILD_FILE="$RUGPI_PROJECT_DIR/.image"
+
+if [ -f "$BUILD_FILE" ]; then
+    echo "Adding build info: $ARTIFACT_FILE" >&2
+    install -D -m 644 "${BUILD_FILE}" "$ARTIFACT_FILE"
     cat "$ARTIFACT_FILE" >&2
 fi
