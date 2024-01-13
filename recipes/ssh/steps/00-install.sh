@@ -5,8 +5,11 @@ ENV_FILE="$RUGPI_PROJECT_DIR/.env"
 
 if [ -f "$ENV_FILE" ]; then
     echo "Loading .env file" >&2
+    # Export all variables included in the file so that env can read them as well
+    set -a
     # shellcheck disable=SC1090
     . "$ENV_FILE"
+    set +a
 fi
 
 add_ssh_key() {
