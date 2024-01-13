@@ -85,6 +85,16 @@ set_etc_hosts() {
     log "Successfully updated /etc/hosts"
 }
 
+enable_wifi() {
+    # enable wifi if NetworkManager is installed and there is one 
+    if command -V nmcli >/dev/null 2>&1; then
+        if [ -n "$(ls /etc/NetworkManager/system-connections/*.nmconnection 2>/dev/null || true)" ]; then
+            log "Enabling wifi"
+            nmcli radio wifi on
+        fi
+    fi
+}
+
 if [ $# -gt 0 ]; then
     C8Y_URL="$1"
 fi
@@ -124,5 +134,7 @@ if [ -f /usr/share/tedge-inventory/scripts.d/80_firmware ]; then
 fi
 
 set_etc_hosts "$DEVICE_ID"
+
+enable_wifi
 
 touch "$RAN_MARKER"

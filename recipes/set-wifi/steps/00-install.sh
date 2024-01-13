@@ -46,7 +46,4 @@ method=auto
 [proxy]
 EOT
 
-# enable wifi by default
-nmcli radio wifi on
-
 chmod 600 /etc/NetworkManager/system-connections/wifi.nmconnection
