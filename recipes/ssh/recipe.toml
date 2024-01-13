@@ -1,0 +1,5 @@
+description = "ssh authorized keys using config or env variables SSH_KEYS_.*"
+dependencies = ["core/ssh"]
+
+[parameters]
+root_authorized_keys = { default = "" }
