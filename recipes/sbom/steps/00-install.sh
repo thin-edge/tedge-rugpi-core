@@ -11,8 +11,9 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 if [ -n "$RUGPI_PROJECT_DIR" ]; then
-    SBOM_FILENAME=${IMAGE_FULLNAME:-debian-packages.list}
-    dpkg --list > "$RUGPI_PROJECT_DIR/$SBOM_FILENAME"
+    SBOM_FILENAME="$RUGPI_PROJECT_DIR/${IMAGE_NAME:-image}.sbom.txt"
+    echo "Writing sbom to $SBOM_FILENAME" >&2
+    dpkg --list > "$SBOM_FILENAME"
 else
     dpkg --list >&2
 fi
