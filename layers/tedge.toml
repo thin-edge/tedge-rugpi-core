@@ -13,11 +13,11 @@ recipes = [
     "rugpi-extra/zsh",
 
     # thin-edge.io recipes
-    "tedge-rugpi-core/persist-overlay",
-    "tedge-rugpi-core/tedge-firmware-update",
-    "tedge-rugpi-core/set-wifi",
-    "tedge-rugpi-core/mosquitto",
-    "tedge-rugpi-core/sbom",
+    "persist-overlay",
+    "tedge-firmware-update",
+    "set-wifi",
+    "mosquitto",
+    "sbom",
 ]
 
 [parameters."core/apt-cleanup"]
