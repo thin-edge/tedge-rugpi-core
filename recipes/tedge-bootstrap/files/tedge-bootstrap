@@ -143,5 +143,8 @@ enable_wifi
 systemctl disable tedge-agent
 systemctl disable tedge-mapper-c8y
 systemctl disable tedge-mapper-collectd
+systemctl stop tedge-agent
+systemctl stop tedge-mapper-c8y
+systemctl stop tedge-mapper-collectd
 
 touch "$RAN_MARKER"
