@@ -1,7 +1,7 @@
 [Unit]
 Description=Set hostname on startup
 Wants=network-pre.target
-Before=network-pre.target
+Before=network-pre.target tedge-mapper-c8y.service tedge-mapper-collectd.service tedge-agent.service
 After=local-fs.target
 ConditionPathExists=!/etc/tedge/.bootstrapped
 
