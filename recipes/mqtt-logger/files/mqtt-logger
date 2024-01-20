@@ -115,14 +115,14 @@ subscribe() {
             --key "$MQTT_KEY_FILE" \
             --cert "$MQTT_CERT_FILE" \
             -t '#' \
-            -F '{"timestamp":%U,"message":%j,"payload_hex":"%x"}'
+            -F '%U\t%t\tqos=%q\tretain=%r\t%p'
     else
         mosquitto_sub \
             --nodelay \
             -h "$MQTT_HOST" \
             -p "$MQTT_PORT" \
             -t '#' \
-            -F '{"timestamp":%U,"message":%j,"payload_hex":"%x"}'
+            -F '%U\t%t\tqos=%q\tretain=%r\t%p'
     fi
 }
 
