@@ -142,9 +142,9 @@ fi
 while true; do
     log "Starting mqtt-logger to ${MQTT_HOST}:${MQTT_PORT}"
     if [ -n "$OUTPUT_LOG" ]; then
-        subscribe | tee -a "$OUTPUT_LOG" || true
+        subscribe | tr -d '\0' | tee -a "$OUTPUT_LOG" || true
     else
-        subscribe || true
+        subscribe | tr -d '\0' || true
     fi
     log "mqtt-logger stopped, waiting ${WAIT} second/s and trying again"
     sleep "$WAIT"
