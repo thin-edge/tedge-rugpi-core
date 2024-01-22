@@ -140,11 +140,11 @@ enable_wifi
 # disable services as they will be enable once the user bootstraps the device.
 # The services still need to be enabled by default in the image to enable
 # smooth image updates where all the required services start automatically
-# systemctl disable tedge-agent
-# systemctl disable tedge-mapper-c8y
-# systemctl disable tedge-mapper-collectd
-# systemctl stop tedge-agent
-# systemctl stop tedge-mapper-c8y
-# systemctl stop tedge-mapper-collectd
+systemctl disable tedge-agent
+systemctl disable tedge-mapper-c8y
+systemctl disable tedge-mapper-collectd
+systemctl stop tedge-agent
+systemctl stop tedge-mapper-c8y
+systemctl stop tedge-mapper-collectd
 
 touch "$RAN_MARKER"
