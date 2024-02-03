@@ -2,6 +2,9 @@
 set -e
 echo "Creating Software Bill Of Materials"
 
+# Rebuild the layer if the environment changes.
+echo ".env" >> "${LAYER_REBUILD_IF_CHANGED}"
+
 ENV_FILE="$RUGPI_PROJECT_DIR/.env"
 
 if [ -f "$ENV_FILE" ]; then

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Rebuild the layer if the environment changes.
+echo ".env" >> "${LAYER_REBUILD_IF_CHANGED}"
+
 if [ -f "$RUGPI_PROJECT_DIR/.env" ]; then
     # shellcheck disable=SC1091
     . "$RUGPI_PROJECT_DIR/.env"
