@@ -2,4 +2,4 @@ name = "tedge-rugpi-core"
 description = "thin-edge.io recipes, collections, and layers for Rugpi."
 
 [repositories]
-rugpi-extra = { git = "https://github.com/silitics/rugpi-extra.git" }
+rugpi-extra = { git = "https://github.com/silitics/rugpi-extra.git", branch = "v0.6" }
