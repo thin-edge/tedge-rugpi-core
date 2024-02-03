@@ -1,7 +1,7 @@
 [system]
 reboot = ["/usr/bin/rugpi_workflow.sh", "restart"]
 
-[log]
-tedge-mapper = "debug"
-tedge-agent = "debug"
-tedge-watchdog = "debug"
+# [log]
+# tedge-mapper = "debug"
+# tedge-agent = "debug"
+# tedge-watchdog = "debug"
