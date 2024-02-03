@@ -1,0 +1,4 @@
+description = "Enable MQTT logger to help with debugging issues"
+
+[parameters]
+enable_service = { default = "true" }

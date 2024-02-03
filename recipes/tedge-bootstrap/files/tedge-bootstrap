@@ -90,7 +90,7 @@ enable_wifi() {
     if command -V nmcli >/dev/null 2>&1; then
         if [ -n "$(ls /etc/NetworkManager/system-connections/*.nmconnection 2>/dev/null || true)" ]; then
             log "Enabling wifi"
-            nmcli radio wifi on
+            nmcli radio wifi on || log "Enabling wifi failed, but continuing anyway"
         fi
     fi
 }
@@ -136,5 +136,15 @@ fi
 set_etc_hosts "$DEVICE_ID"
 
 enable_wifi
+
+# disable services as they will be enable once the user bootstraps the device.
+# The services still need to be enabled by default in the image to enable
+# smooth image updates where all the required services start automatically
+# systemctl disable tedge-agent
+# systemctl disable tedge-mapper-c8y
+# systemctl disable tedge-mapper-collectd
+# systemctl stop tedge-agent
+# systemctl stop tedge-mapper-c8y
+# systemctl stop tedge-mapper-collectd
 
 touch "$RAN_MARKER"

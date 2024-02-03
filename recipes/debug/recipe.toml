@@ -1,0 +1,4 @@
+description = "thin-edge.io debug collection"
+dependencies = [
+    "mqtt-logger",
+]
