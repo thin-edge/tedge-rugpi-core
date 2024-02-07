@@ -137,14 +137,11 @@ set_etc_hosts "$DEVICE_ID"
 
 enable_wifi
 
-# disable services as they will be enable once the user bootstraps the device.
-# The services still need to be enabled by default in the image to enable
-# smooth image updates where all the required services start automatically
-# systemctl disable tedge-agent
-# systemctl disable tedge-mapper-c8y
-# systemctl disable tedge-mapper-collectd
-# systemctl stop tedge-agent
-# systemctl stop tedge-mapper-c8y
-# systemctl stop tedge-mapper-collectd
+# disable the tedge-agent and tedge-mapper services. These services will be enabled/started during bootstrapping
+# Workaround for https://github.com/thin-edge/thin-edge.io/issues/2689
+systemctl disable tedge-mapper-c8y
+systemctl disable tedge-agent
+systemctl stop tedge-mapper-c8y
+systemctl stop tedge-agent
 
 touch "$RAN_MARKER"
