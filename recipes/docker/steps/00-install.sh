@@ -24,3 +24,6 @@ apt-get install -y --no-install-recommends \
     tedge-container-plugin
 
 usermod -aG docker tedge
+
+# Copy Docker persist file
+install -D -m 644 "${RECIPE_DIR}/files/docker.toml" -t /etc/rugpi/state
