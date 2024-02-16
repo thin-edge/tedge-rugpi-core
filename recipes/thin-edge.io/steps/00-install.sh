@@ -7,6 +7,8 @@ echo "uname -a: $(uname -a)" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
 echo "uname -m: $(uname -m)" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
 echo
 
+RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
+
 # install thin-edge.io
 arch=$(uname -m)
 INSTALL_OPTS=()
@@ -21,8 +23,8 @@ case "$arch" in
         )
         ;;
 esac
-
-wget -O - thin-edge.io/install.sh | sh -s -- --channel main "${INSTALL_OPTS[@]}" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+ 
+wget -O - thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
 
 # Install collectd
 apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
