@@ -179,34 +179,14 @@ install() {
     url="$1"
     set +e
     case "$url" in
-        http://*.img|https://*.img)
-            log "Downloading and streaming uncompressed image to rugpi"
+        http://*|https://*)
+            log "Downloading and streaming image to rugpi"
             wget -c -q -t 0 -O - "$url" | $SUDO rugpi-ctrl update install --stream --no-reboot -
             ;;
-
-        # Assume a xz compressed file        
-        http://*|https://*)
-            log "Downloading and streaming xz compressed image to rugpi"
-            wget -c -q -t 0 -O - "$url" | xz -d | $SUDO rugpi-ctrl update install --stream --no-reboot -
-            ;;
-
-        # It is a file
         *)
-            # Check file type using mime types
-            mime_type=$(file "$url" --mime-type | cut -d: -f2 | xargs)
-
-            case "$mime_type" in
-                application/x-xz)
-                    # Decode the file and stream it into rugpi (decompressing on the fly)
-                    log "Installing local xz compressed image to rugpi"
-                    xz --decompress --stdout -T0 "$url" | $SUDO rugpi-ctrl update install --stream --no-reboot -
-                    ;;
-                *)
-                    # Uncompressed file
-                    log "Installing local uncompressed image to rugpi"
-                    $SUDO rugpi-ctrl update install --no-reboot "$url"
-                    ;;
-            esac
+            # It is a file
+            log "Installing local image to rugpi"
+            $SUDO rugpi-ctrl update install --stream --no-reboot "$url"
             ;;
     esac
     EXIT_CODE=$?
