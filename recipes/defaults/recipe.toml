@@ -12,6 +12,7 @@ dependencies = [
     "tedge-firmware-update",
     "x-avahi-daemon",
     "set-wifi",
+    "set-wifi-multi",
     "mosquitto",
     "sbom",
     "ssh",
