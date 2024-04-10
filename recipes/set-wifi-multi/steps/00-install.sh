@@ -63,7 +63,7 @@ if [ -n "$WIFI_SSIDS" ]; then
         WIFI_SSID=$(eval "echo \$$WIFI_SSID_ENV")
         WIFI_PASSWORD=$(eval "echo \$SECRETS_WIFI_${WIFI_ID}_PASSWORD")
         if [ -n "$WIFI_SSID" ] && [ -n "$WIFI_PASSWORD" ]; then
-            echo add_wifi_connection "$WIFI_ID" "$WIFI_SSID" "$WIFI_PASSWORD"
+            add_wifi_connection "$WIFI_ID" "$WIFI_SSID" "$WIFI_PASSWORD"
         fi
     done < <(echo "$WIFI_SSIDS")
 fi
