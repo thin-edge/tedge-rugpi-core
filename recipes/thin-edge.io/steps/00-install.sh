@@ -35,7 +35,8 @@ apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
     tedge-inventory-plugin | tee -a "${RUGPI_PROJECT_DIR}/build.log"
 
 # custom tedge configuration
-tedge config set apt.name "(tedge|c8y|python|wget|vim|curl|apt|mosquitto|ssh|sudo).*"
+# reduce number of packages shown (supported only from >= 1.1.0)
+tedge config set software.plugin.exclude "^(glibc|lib|kernel-|iptables-module).*"
 tedge config set c8y.enable.firmware_update "true"
 
 # Enable network manager by default
