@@ -1,4 +1,4 @@
-#:schema https://gist.githubusercontent.com/reubenmiller/4e28e8403fe0c54b7461ac7d1d6838c2/raw/b8599ccf81120bb22bdaa164655e2cc0b8fcb902/tedge.workflow.json
+#:schema https://gist.githubusercontent.com/reubenmiller/4e28e8403fe0c54b7461ac7d1d6838c2/raw/56bb3339be8e251e5cbdade7a6cdb40aa9992126/tedge.workflow.json
 operation = "firmware_update"
 on_error = "failed"
 
@@ -26,8 +26,11 @@ on_success = "restart"
 on_error = { status = "failed", reason = "Failed to install image"}
 
 [restart]
-action = "restart"
-on_exec = "restarting"  # Internal state used by the "restart" action
+operation = "restart"
+on_exec = "await_restart"
+
+[await_restart]
+action = "await-operation-completion"
 on_success = "restarted"
 on_error = { status = "failed_restart", reason = "Failed to restart device" }
 
@@ -52,8 +55,11 @@ on_success = "successful"
 on_error = { status = "rollback_restart", reason = "Commit failed. Rolling back to default partition" }
 
 [rollback_restart]
-action = "restart"
-on_exec = "restarting"  # Internal state used by the "restart" action
+operation = "restart"
+on_exec = "await_rollback_restart"
+
+[await_rollback_restart]
+action = "await-operation-completion"
 on_success = "rollback_successful"
 
 [rollback_successful]
