@@ -1,0 +1,6 @@
+parent = "core/debian-bookworm"
+
+recipes = [
+    "core/debian-grub-setup",
+    "defaults",
+]
