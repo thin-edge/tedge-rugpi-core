@@ -1,16 +1,10 @@
 description = "thin-edge.io default recipes"
 dependencies = [
-    "core/raspberrypi",
     "core/persist-root-home",
     "rugpi-extra/zsh",
 
-    # thin-edge.io recipes
-    "persist-data",
+    "essentials",
     "persist-network-manager",
-    "persist-overlay",
-    "tedge-bootstrap",
-    "tedge-firmware-update",
-    "x-avahi-daemon",
     "set-wifi",
     "mosquitto",
     "sbom",
