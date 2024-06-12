@@ -6,7 +6,6 @@ dependencies = [
     "essentials",
     "persist-network-manager",
     "set-wifi",
-    "mosquitto",
     "sbom",
     "ssh",
 ]
