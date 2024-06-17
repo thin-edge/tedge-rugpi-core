@@ -1,0 +1,10 @@
+description = "thin-edge.io essential recipes"
+dependencies = [
+    "thin-edge.io",
+    "persist-data",
+    "persist-overlay",
+    "tedge-bootstrap",
+    "tedge-firmware-update",
+    "avahi-daemon",
+    "mosquitto",
+]

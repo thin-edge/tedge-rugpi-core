@@ -1,0 +1,6 @@
+parent = "raspios"
+
+recipes = [
+    "core/rpi-raspios-setup",
+    "defaults",
+]
