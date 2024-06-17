@@ -18,6 +18,20 @@ esac
 echo 'deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/debian-bookworm-backports.list
 apt-get update
 
+#
+# Prevent problems where mosquitto service fails to start due to binding to a
+# non-existent IP address due to the network not being ready
+# The same patch is also included in the yocto open-embedded recipe for mosquitto
+# See https://github.com/eclipse/mosquitto/issues/2878
+#
+mkdir -p /etc/systemd/system/mosquitto.service.d
+cat << EOT > /etc/systemd/system/mosquitto.service.d/override.conf
+[Unit]
+After=network-online.target
+Wants=network-online.target
+EOT
+chmod 644 /etc/systemd/system/mosquitto.service.d/override.conf
+
 DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Options::=--force-confold -y --no-install-recommends install -t bookworm-backports \
     mosquitto \
     mosquitto-clients
