@@ -258,7 +258,7 @@ commit() {
     case "$EXIT_CODE" in
         0)
             # Check what the updated default partition is
-            DEFAULT=$(rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+            DEFAULT=$($SUDO rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
 
             log "Commit successful. New default partition is $DEFAULT"
             # Save firmware meta information to file (for reading on startup during normal operation)
