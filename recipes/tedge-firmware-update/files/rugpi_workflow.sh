@@ -227,6 +227,12 @@ restart() {
 verify() {
     log "Checking device health"
 
+    # Rollback just in case if the partitions could not be read, so we can't confirm which partition we are on
+    if [ -z "$HOT" ] || [ -z "$DEFAULT" ]; then
+        set_reason "Could not read partition information so rolling back to be safe. HOT=$HOT, DEFAULT=$DEFAULT"
+        exit "$REQUEST_RESTART"
+    fi
+
     if [ "$HOT" = "$DEFAULT" ]; then
         # Don't both to reboot if no partition swap occurred because we are already in the ok partition
         set_reason "Partition swap did not occur. Reasons could be, corrupt/non-bootable image, someone did a manual rollback or the machine was restarted manually before the health check was run"
