@@ -26,9 +26,10 @@ _WORKDIR=$(pwd)
 # Change to a directory which is readable otherwise rugpi-ctrl can have problems reading the mounts
 cd /tmp || cd /
 
-HOT=$(rugpi-ctrl system info | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-DEFAULT=$(rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-SPARE=$(rugpi-ctrl system info | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+RUGPI_INFO=$($SUDO rugpi-ctrl system info ||:)
+HOT=$(echo "$RUGPI_INFO" | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+DEFAULT=$(echo "$RUGPI_INFO" | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+SPARE=$(echo "$RUGPI_INFO" | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
 
 ACTION="$1"
 shift
@@ -227,6 +228,12 @@ restart() {
 verify() {
     log "Checking device health"
 
+    # Rollback just in case if the partitions could not be read, so we can't confirm which partition we are on
+    if [ -z "$HOT" ] || [ -z "$DEFAULT" ]; then
+        set_reason "Could not read partition information so rolling back to be safe. HOT=$HOT, DEFAULT=$DEFAULT"
+        exit "$REQUEST_RESTART"
+    fi
+
     if [ "$HOT" = "$DEFAULT" ]; then
         # Don't both to reboot if no partition swap occurred because we are already in the ok partition
         set_reason "Partition swap did not occur. Reasons could be, corrupt/non-bootable image, someone did a manual rollback or the machine was restarted manually before the health check was run"
@@ -252,7 +259,7 @@ commit() {
     case "$EXIT_CODE" in
         0)
             # Check what the updated default partition is
-            DEFAULT=$(rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+            DEFAULT=$($SUDO rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
 
             log "Commit successful. New default partition is $DEFAULT"
             # Save firmware meta information to file (for reading on startup during normal operation)
