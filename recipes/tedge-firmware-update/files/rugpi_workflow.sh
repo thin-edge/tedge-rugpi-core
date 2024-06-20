@@ -26,9 +26,10 @@ _WORKDIR=$(pwd)
 # Change to a directory which is readable otherwise rugpi-ctrl can have problems reading the mounts
 cd /tmp || cd /
 
-HOT=$(rugpi-ctrl system info | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-DEFAULT=$(rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-SPARE=$(rugpi-ctrl system info | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+RUGPI_INFO=$($SUDO rugpi-ctrl system info ||:)
+HOT=$(echo "$RUGPI_INFO" | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+DEFAULT=$(echo "$RUGPI_INFO" | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+SPARE=$(echo "$RUGPI_INFO" | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
 
 ACTION="$1"
 shift
