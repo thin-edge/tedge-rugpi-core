@@ -182,12 +182,12 @@ install() {
     case "$url" in
         http://*|https://*)
             log "Downloading and streaming image to rugpi"
-            wget -c -q -t 0 -O - "$url" | $SUDO rugpi-ctrl update install --stream --no-reboot -
+            wget -c -q -t 0 -O - "$url" | $SUDO rugpi-ctrl update install --no-reboot -
             ;;
         *)
             # It is a file
             log "Installing local image to rugpi"
-            $SUDO rugpi-ctrl update install --stream --no-reboot "$url"
+            $SUDO rugpi-ctrl update install --no-reboot "$url"
             ;;
     esac
     EXIT_CODE=$?
