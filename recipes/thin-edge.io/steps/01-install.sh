@@ -7,7 +7,21 @@ echo "uname -a: $(uname -a)" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
 echo "uname -m: $(uname -m)" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
 echo
 
+# Rebuild the layer if the environment changes.
+echo ".env" >> "${LAYER_REBUILD_IF_CHANGED}"
+if [ -f "$RUGPI_PROJECT_DIR/.env" ]; then
+    # shellcheck disable=SC1091
+    . "$RUGPI_PROJECT_DIR/.env"
+fi
+
 RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
+
+# WORKAROUND: Parameters defined in the layer.toml don't seem to be passed to the recipe
+# so use an additional env variable to set some parameters until the root cause is found
+if [ -n "${TEDGE_INSTALL_CHANNEL:-}" ]; then
+    echo "Using thin-edge.io install channel defined from env: TEDGE_INSTALL_CHANNEL=$TEDGE_INSTALL_CHANNEL" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+    RECIPE_PARAM_CHANNEL="$TEDGE_INSTALL_CHANNEL"
+fi
 
 # install thin-edge.io
 arch=$(uname -m)
