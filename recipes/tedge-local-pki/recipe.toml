@@ -1,0 +1,2 @@
+description = "install thin-edge.io local pki community plugin"
+priority = 30_000
