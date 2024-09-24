@@ -4,6 +4,7 @@ dependencies = [
     "rugpi-extra/zsh",
 
     "essentials",
+    "network",
     "persist-network-manager",
     "set-wifi",
     "sbom",

@@ -5,6 +5,5 @@ dependencies = [
     "persist-overlay",
     "tedge-bootstrap",
     "tedge-firmware-update",
-    "avahi-daemon",
     "mosquitto",
 ]
