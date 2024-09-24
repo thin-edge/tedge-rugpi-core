@@ -4,6 +4,7 @@ dependencies = [
     "persist-data",
     "persist-overlay",
     "tedge-bootstrap",
+    "tedge-local-pki",
     "tedge-firmware-update",
     "mosquitto",
 ]
