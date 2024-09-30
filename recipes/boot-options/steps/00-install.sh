@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-CMDLINE_FILE="/boot/firmware/cmdline.txt"
+CMDLINE_FILE="${RUGPI_BUNDLE_DIR}/roots/boot/cmdline.txt"
 
 echo "Modifying boot cmdline.txt to enable cgroup memory monitoring" >&2
 echo "File: $CMDLINE_FILE (before)" >&2
