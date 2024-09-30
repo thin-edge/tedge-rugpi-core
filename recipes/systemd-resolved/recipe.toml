@@ -1,0 +1,1 @@
+description = "Install and configure systemd-resolved to enable mdns DNS resolution. This recipe should only be added to the final layer due to chroot incompatibilities during building"

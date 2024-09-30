@@ -4,9 +4,10 @@ set -eu
 install -D -m 644 "${RECIPE_DIR}/files/NetworkManager.conf" -T /etc/NetworkManager/NetworkManager.conf
 install -D -m 644 "${RECIPE_DIR}/files/globals.conf" -t /etc/NetworkManager/conf.d/
 
+# systemd-resolved settings
 install -D -m 644 "${RECIPE_DIR}/files/resolved.conf" -T /etc/systemd/resolved.conf
-
 systemctl enable systemd-resolved
+
 # Try to disable avahi-daemon (but don't fail if not present)
 systemctl disable avahi-daemon ||:
 systemctl mask avahi-daemon ||:
