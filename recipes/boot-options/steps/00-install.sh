@@ -3,6 +3,11 @@ set -eu
 
 CMDLINE_FILE="${RUGPI_BUNDLE_DIR}/roots/boot/cmdline.txt"
 
+if [ "$RUGPI_ARCH" = "armhf" ]; then
+    echo "skipping cgroup memory accounting as it is not supported for the architecture. arch=$RUGPI_ARCH" >&2
+    exit 0
+fi
+
 echo "Modifying boot cmdline.txt to enable cgroup memory monitoring" >&2
 echo "File: $CMDLINE_FILE (before)" >&2
 cat "$CMDLINE_FILE" >&2
