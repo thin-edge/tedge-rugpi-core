@@ -24,11 +24,17 @@ apt-get update
 # The same patch is also included in the yocto open-embedded recipe for mosquitto
 # See https://github.com/eclipse/mosquitto/issues/2878
 #
+# Slow down the restart rate of mosquitto so it does not trip the systemd restart rate limit
+# and stop mosquitto from starting altogether
+#
 mkdir -p /etc/systemd/system/mosquitto.service.d
 cat << EOT > /etc/systemd/system/mosquitto.service.d/override.conf
 [Unit]
 After=network-online.target
 Wants=network-online.target
+
+[Service]
+RestartSec = 5
 EOT
 chmod 644 /etc/systemd/system/mosquitto.service.d/override.conf
 
