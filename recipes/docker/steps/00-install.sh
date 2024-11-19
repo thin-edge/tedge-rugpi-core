@@ -21,7 +21,7 @@ apt-get install -y --no-install-recommends \
     containerd.io \
     docker-buildx-plugin \
     docker-compose-plugin \
-    tedge-container-plugin
+    tedge-container-plugin-ng
 
 usermod -aG docker tedge
 
