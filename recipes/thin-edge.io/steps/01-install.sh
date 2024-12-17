@@ -43,7 +43,7 @@ wget -O - thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "
 # Install collectd
 apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
     mosquitto-clients \
-    c8y-command-plugin \
+    tedge-command-plugin \
     tedge-collectd-setup \
     tedge-monit-setup \
     tedge-inventory-plugin | tee -a "${RUGPI_PROJECT_DIR}/build.log"
