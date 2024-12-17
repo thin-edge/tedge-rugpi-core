@@ -21,9 +21,15 @@ apt-get install -y --no-install-recommends \
     containerd.io \
     docker-buildx-plugin \
     docker-compose-plugin \
-    tedge-container-plugin
+    tedge-container-plugin-ng
 
 usermod -aG docker tedge
 
 # Copy Docker persist file
 install -D -m 644 "${RECIPE_DIR}/files/docker.toml" -t /etc/rugpi/state
+
+# Add mosquitto listener which allows other containers access to the thin-edge.io MQTT broker
+install -D -m 0644 "${RECIPE_DIR}/files/tedge-networkcontainer.conf" -t /etc/tedge/mosquitto-conf/
+
+# Add sudoers rules
+install -D -m 0644 "${RECIPE_DIR}/files/suoders.tedge-container-plugin" -T /etc/sudoers.d/tedge-container-plugin
