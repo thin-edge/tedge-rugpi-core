@@ -1,12 +1,12 @@
-# Rugpi thin-edge.io repository
+# Rugix thin-edge.io repository
 
-**Additional recipes and layers for [Rugpi](https://rugpi.io).**
+**Additional recipes and layers for [Rugix](https://rugix.io).**
 
-To make the recipes and layers available, include the following in your `rugpi-bakery.toml`:
+To make the recipes and layers available, include the following in your `rugix-bakery.toml`:
 
 ```toml
 [repositories]
-tedge-rugpi-core = { git = "https://github.com/thin-edge/tedge-rugpi-core.git", branch = "v0.8" }
+tedge-rugix-core = { git = "https://github.com/thin-edge/tedge-rugix-core.git", branch = "v0.8" }
 ```
 
 We follow [Cargo's flavor of semantic versioning](https://doc.rust-lang.org/cargo/reference/resolver.html#semver-compatibility).

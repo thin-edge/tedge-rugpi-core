@@ -1,0 +1,5 @@
+name = "tedge-rugix-core"
+description = "thin-edge.io recipes and layers for Rugix."
+
+[repositories]
+rugix-extra = { git = "https://github.com/silitics/rugix-extra.git", branch = "v0.8" }

@@ -11,17 +11,17 @@ action = "proceed"
 on_success = "executing"
 
 [executing]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status}"
 on_success = "download"
 on_error = { status = "failed", reason = "Refusing to start update as the wrong partition is active" }
 
 [download]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status} --url ${.payload.remoteUrl}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status} --url ${.payload.remoteUrl}"
 on_success = "install"
 on_error = { status = "failed", reason = "Failed to download image"}
 
 [install]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status} --url ${.payload.url}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status} --url ${.payload.url}"
 on_success = "restart"
 on_error = { status = "failed", reason = "Failed to install image"}
 
@@ -35,22 +35,22 @@ on_success = "restarted"
 on_error = { status = "failed_restart", reason = "Failed to restart device" }
 
 [restarted]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status}"
 on_success = "verify"
 on_error = { status = "rollback_restart", reason = "Unexpected error during restarted check. Rolling back"}
 
 [failed_restart]
-script = "/usr/bin/rugpi_workflow.sh failed_restart"
+script = "/usr/bin/rugix_workflow.sh failed_restart"
 on_success = { status = "failed", reason = "Device failed to restart" }
 
 [verify]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version} --url ${.payload.remoteUrl}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version} --url ${.payload.remoteUrl}"
 on_exit.0 = { status = "commit" }
 on_exit.4 = { status = "rollback_restart", reason = "Verification failed. Rolling back to default partition" }
 on_exit._ = { status = "failed", reason = "Verification failed, no rollback necessary" }
 
 [commit]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version} --url ${.payload.remoteUrl}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version} --url ${.payload.remoteUrl}"
 on_success = "successful"
 on_error = { status = "rollback_restart", reason = "Commit failed. Rolling back to default partition" }
 
@@ -63,7 +63,7 @@ action = "await-operation-completion"
 on_success = "rollback_successful"
 
 [rollback_successful]
-script = "/usr/bin/rugpi_workflow.sh ${.payload.status}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status}"
 on_success = { status = "failed", reason = "Firmware update failed, but the rollback to the default partition was successful" }
 
 [successful]

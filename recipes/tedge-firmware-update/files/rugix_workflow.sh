@@ -23,13 +23,13 @@ fi
 
 _WORKDIR=$(pwd)
 
-# Change to a directory which is readable otherwise rugpi-ctrl can have problems reading the mounts
+# Change to a directory which is readable otherwise rugix-ctrl can have problems reading the mounts
 cd /tmp || cd /
 
-RUGPI_INFO=$($SUDO rugpi-ctrl system info ||:)
-HOT=$(echo "$RUGPI_INFO" | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-DEFAULT=$(echo "$RUGPI_INFO" | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-SPARE=$(echo "$RUGPI_INFO" | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+RUGIX_INFO=$($SUDO rugix-ctrl system info ||:)
+HOT=$(echo "$RUGIX_INFO" | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+DEFAULT=$(echo "$RUGIX_INFO" | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+SPARE=$(echo "$RUGIX_INFO" | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
 
 ACTION="$1"
 shift
@@ -181,13 +181,13 @@ install() {
     set +e
     case "$url" in
         http://*|https://*)
-            log "Downloading and streaming image to rugpi"
-            wget -c -q -t 0 -O - "$url" | $SUDO rugpi-ctrl update install --no-reboot -
+            log "Downloading and streaming image to rugix"
+            wget -c -q -t 0 -O - "$url" | $SUDO rugix-ctrl update install --no-reboot -
             ;;
         *)
             # It is a file
-            log "Installing local image to rugpi"
-            $SUDO rugpi-ctrl update install --no-reboot "$url"
+            log "Installing local image to rugix"
+            $SUDO rugix-ctrl update install --no-reboot "$url"
             ;;
     esac
     EXIT_CODE=$?
@@ -215,12 +215,12 @@ restart() {
         message=$(printf '{"text":"Rebooting into spare partition (%s -> %s)","partition":"%s"}' "$HOT" "$SPARE" "$HOT")
         tedge mqtt pub -q 1 "te/device/main///e/reboot_spare" "$message" ||:
         sleep 5
-        $SUDO rugpi-ctrl system reboot --spare
+        $SUDO rugix-ctrl system reboot --spare
     else
         message=$(printf '{"text":"Rebooting into default partition (%s -> %s)","partition":"%s"}' "$HOT" "$DEFAULT" "$HOT")
         tedge mqtt pub -q 1 "te/device/main///e/reboot_default" "$message" ||:
         sleep 5
-        $SUDO rugpi-ctrl system reboot
+        $SUDO rugix-ctrl system reboot
     fi
     exit "$OK"
 }
@@ -250,16 +250,16 @@ verify() {
 }
 
 commit() {
-    log "Executing: rugpi-ctrl system commit"
+    log "Executing: rugix-ctrl system commit"
     set +e
-    $SUDO rugpi-ctrl system commit
+    $SUDO rugix-ctrl system commit
     EXIT_CODE=$?
     set -e
 
     case "$EXIT_CODE" in
         0)
             # Check what the updated default partition is
-            DEFAULT=$($SUDO rugpi-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+            DEFAULT=$($SUDO rugix-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
 
             log "Commit successful. New default partition is $DEFAULT"
             # Save firmware meta information to file (for reading on startup during normal operation)
@@ -267,7 +267,7 @@ commit() {
             printf 'FIRMWARE_NAME=%s\nFIRMWARE_VERSION=%s\nFIRMWARE_URL=%s\n' "$FIRMWARE_NAME" "$FIRMWARE_VERSION" "$FIRMWARE_URL" > "$FIRMWARE_META_FILE"
             ;;
         *)
-            log "rugpi-ctrl returned code: $EXIT_CODE. Rolling back to previous partition"
+            log "rugix-ctrl returned code: $EXIT_CODE. Rolling back to previous partition"
             ;;
     esac
     exit "$EXIT_CODE"

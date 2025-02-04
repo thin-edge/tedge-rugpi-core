@@ -26,7 +26,7 @@ apt-get install -y --no-install-recommends \
 usermod -aG docker tedge
 
 # Copy Docker persist file
-install -D -m 644 "${RECIPE_DIR}/files/docker.toml" -t /etc/rugpi/state
+install -D -m 644 "${RECIPE_DIR}/files/docker.toml" -t /etc/rugix/state
 
 # Add mosquitto listener which allows other containers access to the thin-edge.io MQTT broker
 install -D -m 0644 "${RECIPE_DIR}/files/tedge-networkcontainer.conf" -t /etc/tedge/mosquitto-conf/

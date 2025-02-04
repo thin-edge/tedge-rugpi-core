@@ -1,5 +1,5 @@
 [system]
-reboot = ["/usr/bin/rugpi_workflow.sh", "restart"]
+reboot = ["/usr/bin/rugix_workflow.sh", "restart"]
 
 # [log]
 # tedge-mapper = "debug"

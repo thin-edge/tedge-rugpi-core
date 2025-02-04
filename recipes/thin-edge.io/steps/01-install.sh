@@ -3,15 +3,15 @@ set -e
 echo "----------------------------------------------------------------------------------"
 echo "Executing $0"
 echo "----------------------------------------------------------------------------------"
-echo "uname -a: $(uname -a)" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
-echo "uname -m: $(uname -m)" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+echo "uname -a: $(uname -a)" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
+echo "uname -m: $(uname -m)" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
 echo
 
 # Rebuild the layer if the environment changes.
 echo ".env" >> "${LAYER_REBUILD_IF_CHANGED}"
-if [ -f "$RUGPI_PROJECT_DIR/.env" ]; then
+if [ -f "$RUGIX_PROJECT_DIR/.env" ]; then
     # shellcheck disable=SC1091
-    . "$RUGPI_PROJECT_DIR/.env"
+    . "$RUGIX_PROJECT_DIR/.env"
 fi
 
 RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
@@ -19,7 +19,7 @@ RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
 # WORKAROUND: Parameters defined in the layer.toml don't seem to be passed to the recipe
 # so use an additional env variable to set some parameters until the root cause is found
 if [ -n "${TEDGE_INSTALL_CHANNEL:-}" ]; then
-    echo "Using thin-edge.io install channel defined from env: TEDGE_INSTALL_CHANNEL=$TEDGE_INSTALL_CHANNEL" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+    echo "Using thin-edge.io install channel defined from env: TEDGE_INSTALL_CHANNEL=$TEDGE_INSTALL_CHANNEL" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
     RECIPE_PARAM_CHANNEL="$TEDGE_INSTALL_CHANNEL"
 fi
 
@@ -30,7 +30,7 @@ case "$arch" in
     *armv7*)
         # Due to differences between the build process and the target device, the arch
         # used for installation needs to be forced to armv6.
-        echo "Using armv6 workaround" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+        echo "Using armv6 workaround" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
         INSTALL_OPTS+=(
             --arch
             armv6
@@ -38,7 +38,7 @@ case "$arch" in
         ;;
 esac
  
-wget -O - thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}" | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+wget -O - thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
 
 # Install collectd
 apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
@@ -46,7 +46,7 @@ apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
     tedge-command-plugin \
     tedge-collectd-setup \
     tedge-monit-setup \
-    tedge-inventory-plugin | tee -a "${RUGPI_PROJECT_DIR}/build.log"
+    tedge-inventory-plugin | tee -a "${RUGIX_PROJECT_DIR}/build.log"
 
 # custom tedge configuration
 # reduce number of packages shown (supported only from >= 1.1.0)
@@ -57,7 +57,7 @@ tedge config set c8y.enable.firmware_update "true"
 systemctl enable NetworkManager || true
 
 # Remove software kill switches which would otherwise prevent the wifi from being enabled by default on rpi 3 and 4's
-# Related to https://github.com/thin-edge/tedge-rugpi-image/issues/69
+# Related to https://github.com/thin-edge/tedge-rugix-image/issues/69
 # On RaspberryPiOS the image disables the wifi by default on 5Ghz devices if the country code is not set
 # but since we are building generic images the wifi will be enabled by default.
 #
@@ -83,7 +83,7 @@ if ! grep -q '^pid_file' /etc/mosquitto/mosquitto.conf; then
 fi
 
 # Persist tedge configuration and related components (e.g. mosquitto)
-install -D -m 644 "${RECIPE_DIR}/files/tedge-config.toml" -t /etc/rugpi/state
+install -D -m 644 "${RECIPE_DIR}/files/tedge-config.toml" -t /etc/rugix/state
 
 # Add default plugin configurations
 install -D -m 644 -g tedge -o tedge "${RECIPE_DIR}/files/tedge-configuration-plugin.toml" -t /etc/tedge/plugins/

@@ -4,7 +4,7 @@
 #
 # Example file contents:
 # ```
-# tedge_rugpi_default_pi45_20231203.1557
+# tedge_rugix_default_pi45_20231203.1557
 # ```
 ##################################################
 set -e

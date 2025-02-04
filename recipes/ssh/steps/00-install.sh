@@ -4,7 +4,7 @@ set -e
 # Rebuild the layer if the environment changes.
 echo ".env" >> "${LAYER_REBUILD_IF_CHANGED}"
 
-ENV_FILE="$RUGPI_PROJECT_DIR/.env"
+ENV_FILE="$RUGIX_PROJECT_DIR/.env"
 
 if [ -f "$ENV_FILE" ]; then
     echo "Loading .env file" >&2

@@ -1,5 +1,5 @@
 [Unit]
-Description=rugpi auto rollback
+Description=rugix auto rollback
 
 [Timer]
 OnBootSec=1800s

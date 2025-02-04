@@ -1,5 +1,5 @@
 **/debian-packages.list
 *.log
 *.env
-/.rugpi
+/.rugix
 /build
