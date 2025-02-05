@@ -1,5 +1,9 @@
-**/debian-packages.list
-*.log
-*.env
-/.rugix
 /build
+/.rugix
+build.log
+image.sbom.txt
+.env
+
+# test keys
+id_rsa
+id_rsa.pub
