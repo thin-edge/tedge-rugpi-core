@@ -1,0 +1,30 @@
+[repositories]
+rugix-extra = { git = "https://github.com/silitics/rugix-extra.git", branch = "v0.8" }
+
+[systems.debian-bookworm-tedge-efi-arm64]
+layer = "debian-bookworm-tedge-efi"
+architecture = "arm64"
+target = "generic-grub-efi"
+
+[systems.debian-bookworm-tedge-efi-amd64]
+layer = "debian-bookworm-tedge-efi"
+architecture = "amd64"
+target = "generic-grub-efi"
+
+# Compatible with:
+# - Raspberry Pi 5
+# - Raspberry Pi 4 (with recent firmware)
+# - Raspberry Pi CM4 (with recent firmware)
+[systems.raspios-tedge-pi5]
+layer = "raspios-tedge"
+architecture = "arm64"
+target = "rpi-tryboot"
+
+# Compatible with:
+# - Raspberry Pi 5
+# - Raspberry Pi 4 (with recent firmware)
+# - Raspberry Pi CM4 (with recent firmware)
+[systems.raspios-tedge-pi3]
+layer = "raspios-tedge"
+architecture = "arm64"
+target = "rpi-uboot"

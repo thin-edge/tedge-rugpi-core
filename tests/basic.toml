@@ -1,0 +1,62 @@
+[[systems]]
+system = "debian-bookworm-tedge-arm64"
+ssh = { private-key = "./tests/id_rsa" }
+
+[[steps]]
+action = "run"
+description = "check default services"
+script = """
+#!/bin/bash
+set -euo pipefail
+tedge --version
+
+systemctl is-active mosquitto
+"""
+
+[[steps]]
+action = "run"
+description = "install a system update"
+stdin-file = "./build/debian-bookworm-tedge-arm64/system.rugixb"
+# Rebooting may cause the SSH client to disconnect while executing the script.
+may-disconnect = true
+script = """
+#!/bin/bash
+set -euo pipefail
+
+systemctl start tedge-agent
+sleep 5
+
+echo "uploading firmware image to file transfer store"
+curl -XPUT -f http://127.0.0.1:8000/tedge/file-transfer/system.rugixb -T -
+
+tedge mqtt pub -r te/device/main///cmd/firmware_update/local-1 '{
+    "status": "init",
+    "name": "tedge-rugix",
+    "version": "1.0.2",
+    "remoteUrl": "http://127.0.0.1:8000/tedge/file-transfer/system.rugixb"
+}'
+"""
+
+[[steps]]
+action = "run"
+description = "Wait for device to reboot"
+may-disconnect = true
+may-fail = true
+script = """
+#!/bin/bash
+set -euo pipefail
+sleep 300
+"""
+
+[[steps]]
+action = "run"
+description = "Verify Update"
+script = """
+#!/bin/bash
+set -euo pipefail
+
+OUTPUT=$(mosquitto_sub -W 1200 -t te/device/main///cmd/firmware_update/local-1 ||:)
+echo "$OUTPUT"
+
+[[ "$OUTPUT" =~ .*successful.* ]]
+"""

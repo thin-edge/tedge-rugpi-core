@@ -1,6 +1,9 @@
 parent = "core/debian-bookworm"
 
 recipes = [
-    "core/debian-grub-setup",
+    # default tedge packages
     "defaults",
+
+    # Setup the network
+    "setup-network",
 ]
