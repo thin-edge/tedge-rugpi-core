@@ -26,10 +26,14 @@ _WORKDIR=$(pwd)
 # Change to a directory which is readable otherwise rugix-ctrl can have problems reading the mounts
 cd /tmp || cd /
 
-RUGIX_INFO=$($SUDO rugix-ctrl system info ||:)
-HOT=$(echo "$RUGIX_INFO" | grep Hot | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-DEFAULT=$(echo "$RUGIX_INFO" | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
-SPARE=$(echo "$RUGIX_INFO" | grep Spare | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+BOOT_ACTIVE=$($SUDO rugix-ctrl system info --json | jq -r '.boot.activeGroup' | tr '[:lower:]' '[:upper:]')
+BOOT_DEFAULT=$($SUDO rugix-ctrl system info --json | jq -r '.boot.defaultGroup' | tr '[:lower:]' '[:upper:]')
+
+if [ "$BOOT_ACTIVE" = "A" ]; then
+    BOOT_SPARE=B
+else
+    BOOT_SPARE=A
+fi
 
 ACTION="$1"
 shift
@@ -39,7 +43,7 @@ log() {
     echo "$msg" >&2
 
     # publish to pub for better resolution
-    tedge mqtt pub -q 2 te/device/main///e/firmware_update "{\"text\":\"Firmware Workflow: [$ACTION] $*\",\"state\":\"$ACTION\",\"partition\":\"$HOT\"}"
+    tedge mqtt pub -q 2 te/device/main///e/firmware_update "{\"text\":\"Firmware Workflow: [$ACTION] $*\",\"state\":\"$ACTION\",\"partition\":\"$BOOT_ACTIVE\"}"
     sleep 1
 }
 
@@ -122,11 +126,11 @@ wait_for_network() {
 }
 
 executing() {
-    if [ "$HOT" != "$DEFAULT" ]; then
-        set_reason "Refusing to install update as the current (hot) partition is not the default partition. This indicates that you may be in the middle of an update. Please reboot to switch to the default partition"
+    if [ "$BOOT_ACTIVE" != "$BOOT_DEFAULT" ]; then
+        set_reason "Refusing to install update as the current (active) partition is not the default partition. This indicates that you may be in the middle of an update. Please reboot to switch to the default partition"
         exit "$FAILED"
     fi
-    log "Starting firmware update. Current partition is $HOT, so update will be applied to $SPARE"
+    log "Starting firmware update. Current partition is $BOOT_ACTIVE, so update will be applied to $BOOT_SPARE"
 }
 
 download() {
@@ -182,12 +186,12 @@ install() {
     case "$url" in
         http://*|https://*)
             log "Downloading and streaming image to rugix"
-            wget -c -q -t 0 -O - "$url" | $SUDO rugix-ctrl update install --no-reboot -
+            wget -c -q -t 0 -O - "$url" | $SUDO rugix-ctrl update install --reboot no -
             ;;
         *)
             # It is a file
             log "Installing local image to rugix"
-            $SUDO rugix-ctrl update install --no-reboot "$url"
+            $SUDO rugix-ctrl update install --reboot no "$url"
             ;;
     esac
     EXIT_CODE=$?
@@ -212,12 +216,12 @@ restart() {
     if [ -f "$REBOOT_SPARE_REQUEST" ]; then
         rm -f "$REBOOT_SPARE_REQUEST"
 
-        message=$(printf '{"text":"Rebooting into spare partition (%s -> %s)","partition":"%s"}' "$HOT" "$SPARE" "$HOT")
+        message=$(printf '{"text":"Rebooting into spare partition (%s -> %s)","partition":"%s"}' "$BOOT_ACTIVE" "$BOOT_SPARE" "$BOOT_ACTIVE")
         tedge mqtt pub -q 1 "te/device/main///e/reboot_spare" "$message" ||:
         sleep 5
         $SUDO rugix-ctrl system reboot --spare
     else
-        message=$(printf '{"text":"Rebooting into default partition (%s -> %s)","partition":"%s"}' "$HOT" "$DEFAULT" "$HOT")
+        message=$(printf '{"text":"Rebooting into default partition (%s -> %s)","partition":"%s"}' "$BOOT_ACTIVE" "$BOOT_DEFAULT" "$BOOT_ACTIVE")
         tedge mqtt pub -q 1 "te/device/main///e/reboot_default" "$message" ||:
         sleep 5
         $SUDO rugix-ctrl system reboot
@@ -229,12 +233,12 @@ verify() {
     log "Checking device health"
 
     # Rollback just in case if the partitions could not be read, so we can't confirm which partition we are on
-    if [ -z "$HOT" ] || [ -z "$DEFAULT" ]; then
-        set_reason "Could not read partition information so rolling back to be safe. HOT=$HOT, DEFAULT=$DEFAULT"
+    if [ -z "$BOOT_ACTIVE" ] || [ -z "$BOOT_DEFAULT" ]; then
+        set_reason "Could not read partition information so rolling back to be safe. ACTIVE=$BOOT_ACTIVE, DEFAULT=$BOOT_DEFAULT"
         exit "$REQUEST_RESTART"
     fi
 
-    if [ "$HOT" = "$DEFAULT" ]; then
+    if [ "$BOOT_ACTIVE" = "$BOOT_DEFAULT" ]; then
         # Don't both to reboot if no partition swap occurred because we are already in the ok partition
         set_reason "Partition swap did not occur. Reasons could be, corrupt/non-bootable image, someone did a manual rollback or the machine was restarted manually before the health check was run"
         exit "$FAILED"
@@ -259,9 +263,9 @@ commit() {
     case "$EXIT_CODE" in
         0)
             # Check what the updated default partition is
-            DEFAULT=$($SUDO rugix-ctrl system info | grep Default | cut -d: -f2 | tr '[:lower:]' '[:upper:]' | xargs)
+            BOOT_DEFAULT=$($SUDO rugix-ctrl system info --json | jq -r '.boot.defaultGroup' | tr '[:lower:]' '[:upper:]')
 
-            log "Commit successful. New default partition is $DEFAULT"
+            log "Commit successful. New default partition is $BOOT_DEFAULT"
             # Save firmware meta information to file (for reading on startup during normal operation)
             local_log "Saving firmware info to $FIRMWARE_META_FILE"
             printf 'FIRMWARE_NAME=%s\nFIRMWARE_VERSION=%s\nFIRMWARE_URL=%s\n' "$FIRMWARE_NAME" "$FIRMWARE_VERSION" "$FIRMWARE_URL" > "$FIRMWARE_META_FILE"
@@ -282,10 +286,10 @@ case "$ACTION" in
     restart) restart; ;;
     restarted)
 	    wait_for_network ||:
-        log "Device has been restarted...continuing workflow. partition=$HOT, default=$DEFAULT"
+        log "Device has been restarted...continuing workflow. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
         ;;
     rollback_successful)
-        log "Firmware update failed, but the rollback was successful. partition=$HOT, default=$DEFAULT"
+        log "Firmware update failed, but the rollback was successful. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
         ;;
     failed_restart) ;;
     *)
