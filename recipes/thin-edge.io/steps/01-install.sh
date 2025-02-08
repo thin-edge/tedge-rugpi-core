@@ -37,8 +37,29 @@ case "$arch" in
         )
         ;;
 esac
- 
-wget -O - thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
+
+download_file_with_retries() {
+    max_attempts="$1"
+    retries="$max_attempts"
+    url="$2"
+    tmp_file=$(mktemp)
+    while ! wget -O "$tmp_file" "$url"; do
+        retries=$((retries - 1))
+        if [ "$retries" -lt 0 ]; then
+            echo "ERROR: Failed to download url after $max_attempts attempts. url=$url" >&2
+            return 1
+        fi
+        echo "WARNING: Failed to download url (attempts_remaining=$((retries+1)). Retrying in 5 seconds" >&2
+        sleep 5
+    done
+
+    # cat file to stdout
+    cat "$tmp_file"
+    rm -f "$tmp_file"
+}
+
+# NOTE: For some reason this can fail to download from cloudsmith
+download_file_with_retries 3 thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
 
 # Install collectd
 apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
