@@ -7,6 +7,8 @@ DOCKER_FLAGS=${DOCKER_FLAGS:-""}
 
 RUGIX_DEV=${RUGIX_DEV:-"false"}
 
+RUGIX_CONTEXT_DIR=${RUGIX_CONTEXT_DIR:-""}
+
 RUGIX_CACHE_VOLUME=${RUGIX_CACHE_VOLUME:-"rugix-build-cache"}
 
 if [ "${RUGIX_DEV}" = "false" ]; then
@@ -29,7 +31,7 @@ fi
 
 if [ -n "${RUGIX_CACHE_VOLUME}" ]; then
     $DOCKER volume create "${RUGIX_CACHE_VOLUME}" >/dev/null
-    DOCKER_FLAGS="${DOCKER_FLAGS} -v ${RUGIX_CACHE_VOLUME}:/var/rugix-bakery/cache"
+    DOCKER_FLAGS="${DOCKER_FLAGS} -v ${RUGIX_CACHE_VOLUME}:/run/rugix/bakery/cache"
 fi
 
 if [ "${1:-}" == "run" ]; then
@@ -40,6 +42,7 @@ fi
 exec $DOCKER run --rm --privileged \
     $DOCKER_FLAGS \
     -v "$(pwd)":/project \
+    -v "$(pwd)/${RUGIX_CONTEXT_DIR}":/run/rugix/bakery/context \
     -v /dev:/dev \
     -e "RUGIX_HOST_PROJECT_DIR=$(pwd)" \
     -e "RUGIX_BAKERY_IMAGE=${RUGIX_BAKERY_IMAGE}" \
