@@ -1,6 +1,16 @@
 [repositories]
 rugix-extra = { git = "https://github.com/silitics/rugix-extra.git", branch = "v0.8" }
 
+[systems.debian-trixie-tedge-efi-arm64]
+layer = "debian-trixie-tedge-efi"
+architecture = "arm64"
+target = "generic-grub-efi"
+
+[systems.debian-trixie-tedge-efi-amd64]
+layer = "debian-trixie-tedge-efi"
+architecture = "amd64"
+target = "generic-grub-efi"
+
 [systems.debian-bookworm-tedge-efi-arm64]
 layer = "debian-bookworm-tedge-efi"
 architecture = "arm64"

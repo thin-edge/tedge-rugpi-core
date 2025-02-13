@@ -1,0 +1,9 @@
+parent = "debian-trixie"
+
+recipes = [
+    # default tedge packages
+    "defaults",
+
+    # Setup the network
+    "setup-network",
+]

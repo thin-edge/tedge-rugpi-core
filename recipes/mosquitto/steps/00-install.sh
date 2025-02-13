@@ -15,12 +15,24 @@ case "$DPKG_ARCH" in
         ;;
 esac
 
-echo 'deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/debian-bookworm-backports.list
-apt-get update
+if [ -f /etc/os-release ]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+fi
+if [ "${VERSION_ID:-0}" -eq 12 ]; then
+    # bookworm: install mosquitto from backports
+    echo 'deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/debian-bookworm-backports.list
+    apt-get update
 
-DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Options::=--force-confold -y --no-install-recommends install -t bookworm-backports \
-    mosquitto \
-    mosquitto-clients
+    DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Options::=--force-confold -y --no-install-recommends install -t bookworm-backports \
+        mosquitto \
+        mosquitto-clients
+else
+    # trixie includes the required mosquitto version
+    DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Options::=--force-confold -y --no-install-recommends install \
+        mosquitto \
+        mosquitto-clients
+fi
 
 # Enable mosquitto by default (don't rely on the systemd )
 systemctl enable mosquitto
