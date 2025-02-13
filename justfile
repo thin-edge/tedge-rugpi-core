@@ -26,9 +26,9 @@ prepare:
 list-systems:
     ./run-bakery list systems
 
-    echo
-    echo just SYSTEM=exaple build
-    echo
+    @echo
+    @echo just SYSTEM=example build
+    @echo
 
 #
 build:
