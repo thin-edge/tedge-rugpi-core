@@ -1,3 +1,4 @@
+#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-repository.schema.json
 name = "tedge-rugix-core"
 description = "thin-edge.io recipes and layers for Rugix."
 
