@@ -6,6 +6,6 @@ dependencies = [
     "essentials",
     "persist-network-manager",
     "set-wifi",
-    "sbom",
+    "rugix-extra/simple-sbom",
     "ssh",
 ]

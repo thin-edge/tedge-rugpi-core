@@ -2,6 +2,7 @@
 /.rugix
 build.log
 image.sbom.txt
+sbom.txt
 .env
 
 # test keys
