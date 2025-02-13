@@ -1,0 +1,46 @@
+[[provider]]
+name = "tpm-provider"
+provider_type = "Tpm"
+key_info_manager = "sqlite-manager"
+# (Required) TPM TCTI device to use with this provider. The string can include configuration values - if no
+# configuration value is given, the defaults are used. Options are:
+# - "device": uses a TPM device available as a file node; path can be given as a configuration string,
+# e.g "device:/path/to/tpm". The default path is /dev/tpm0, but this default is only suitable in deployments
+# where Parsec would have exclusive usage of the device, and where Parsec is executing at a sufficiently high
+# privilege for such access. It is more common for the TPM device to be managed by an Access Broker / Resource
+# Manager (ABRM) component, either within the kernel or via a userspace daemon (the TABRMD). Trying to
+# use /dev/tpm0 directly in such cases will lead to "device busy" errors on service start-up. Instead, Parsec should
+# normally be configured to access the TPM via the suitable ABRM. To use the in-kernel ABRM, the "device"
+# setting should be configured to use the managed TPM device path, typically /dev/tpmrm0. Permissions on this
+# device are normally less restrictive. In most Linux distributions, this device can be accessed by any user
+# within the "tss" group, so whatever user the Parsec service is running as should be made a member of this group.
+# To use the userspace ABRMD, adopt the "tabrmd" setting below, instead of "device".
+# - "mssim": uses the TPM simulator server with the socket; server path and/or port can be given as configuration values,
+# e.g. "mssim:host=168.0.1.1,port=1234"; "host" can be set to IPv4, IPv6 or a hostname; default values are
+# "localhost" for "host" and 2321 for "port"
+# - "tabrmd": uses the TPM2 Access Broker & Resource Management Daemon; dbus name and type ("session" or
+# "system") can be given as parameters: e.g. "tabrmd:bus_name=some.bus.Name,bus_type=session"; default
+# values are "com.intel.tss2.Tabrmd" for "bus_name" and "system" for "bus_type"
+#tcti = "mssim"
+
+# Use in-kernel Access Broker & Resource Manager (ABRM)
+tcti = "device:/dev/tpmrm0"
+
+# (Required) Authentication value for performing operations on the TPM Owner Hierarchy. The string can
+# be empty, however we strongly suggest that you use a secure passcode.
+# To align with TPM tooling, PARSEC allows "owner_hierarchy_auth" to have a prefix indicating a string value,
+# e.g. "str:password", or to represent a string version of a hex value, e.g. "hex:1a2b3c". If no prefix is
+# provided, the value is considered to be a string.
+owner_hierarchy_auth = "password"
+
+# (Optional) Authentication value for performing operations on the TPM Endorsement Hierarchy. The string can
+# be empty, however we strongly suggest that you use a secure passcode.
+# This authentication value is used for operations that rely on keys stored in the Endorsement Hierarchy, e.g.
+# key attestation using the default Endorsement Key.
+# To align with TPM tooling, PARSEC allows "endorsement_hierarchy_auth" to have a prefix indicating a string value,
+# e.g. "str:password", or to represent a string version of a hex value, e.g. "hex:1a2b3c". If no prefix is
+# provided, the value is considered to be a string.
+#endorsement_hierarchy_auth = "password"
+
+# (Optional) Allows the service to still start without this provider if there is no TPM on the system. The priority list of providers will be as if this provider was commented out.
+skip_if_no_tpm = true
