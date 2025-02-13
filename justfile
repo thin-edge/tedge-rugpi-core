@@ -27,14 +27,12 @@ list-systems:
     ./run-bakery list systems
 
     @echo
-    @echo just SYSTEM=example build
+    @echo just SYSTEM=example build-image
     @echo
 
 #
-build:
+build-image:
     ./run-bakery bake image {{SYSTEM}}
-    ./run-bakery bake bundle --without-compression {{SYSTEM}}
-
 
 # Build bundle
 build-bundle:
