@@ -16,10 +16,6 @@ init_pkcs11_softhsm() {
     PKCS11_MODULE="/usr/lib/softhsm/libsofthsm2.so"
     SLOT_NUMBER=$(softhsm2-util --show-slots | head -n2 | tail -n1 | cut -d " " -f 2)
 
-    # sed -i "s/^# library_path.*$/library_path = \"$PKCS11_MODULE\"/g" /etc/parsec/config.toml
-    # sed -i "s/^# slot_number.*$/slot_number = $SLOT_NUMBER/g" /etc/parsec/config.toml
-    # sed -i "s/^# user_pin.*$/user_pin = \"$USER_PIN\"/g" /etc/parsec/config.toml
-
     cat <<EOT >> /etc/parsec/config.pkcs11-provider.toml
 [[provider]]
 name = "pkcs11-provider"
