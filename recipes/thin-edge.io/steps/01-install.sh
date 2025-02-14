@@ -3,8 +3,6 @@ set -e
 echo "----------------------------------------------------------------------------------"
 echo "Executing $0"
 echo "----------------------------------------------------------------------------------"
-echo "uname -a: $(uname -a)" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
-echo "uname -m: $(uname -m)" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
 echo
 
 # Rebuild the layer if the environment changes.
@@ -19,7 +17,7 @@ RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
 # WORKAROUND: Parameters defined in the layer.toml don't seem to be passed to the recipe
 # so use an additional env variable to set some parameters until the root cause is found
 if [ -n "${TEDGE_INSTALL_CHANNEL:-}" ]; then
-    echo "Using thin-edge.io install channel defined from env: TEDGE_INSTALL_CHANNEL=$TEDGE_INSTALL_CHANNEL" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
+    echo "Using thin-edge.io install channel defined from env: TEDGE_INSTALL_CHANNEL=$TEDGE_INSTALL_CHANNEL" >&2
     RECIPE_PARAM_CHANNEL="$TEDGE_INSTALL_CHANNEL"
 fi
 
@@ -30,7 +28,7 @@ case "$arch" in
     *armv7*)
         # Due to differences between the build process and the target device, the arch
         # used for installation needs to be forced to armv6.
-        echo "Using armv6 workaround" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
+        echo "Using armv6 workaround" >&2
         INSTALL_OPTS+=(
             --arch
             armv6
@@ -59,7 +57,7 @@ download_file_with_retries() {
 }
 
 # NOTE: For some reason this can fail to download from cloudsmith
-download_file_with_retries 3 thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}" | tee -a "${RUGIX_PROJECT_DIR}/build.log"
+download_file_with_retries 3 thin-edge.io/install.sh | sh -s -- --channel "$RECIPE_PARAM_CHANNEL" "${INSTALL_OPTS[@]}"
 
 # Install collectd
 apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
@@ -67,7 +65,7 @@ apt-get install -y -o DPkg::Options::=--force-confnew --no-install-recommends \
     tedge-command-plugin \
     tedge-collectd-setup \
     tedge-monit-setup \
-    tedge-inventory-plugin | tee -a "${RUGIX_PROJECT_DIR}/build.log"
+    tedge-inventory-plugin
 
 # custom tedge configuration
 # reduce number of packages shown (supported only from >= 1.1.0)
