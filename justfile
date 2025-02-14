@@ -38,9 +38,13 @@ build-setup:
 build-image:
     ./run-bakery bake image {{SYSTEM}}
 
-# Build bundle
-build-bundle:
+# Build bundle (uncompressed)
+build-bundle-uncompressed:
     ./run-bakery bake bundle --without-compression {{SYSTEM}}
+
+# Build build (compressed)
+build-bundle:
+    ./run-bakery bake bundle {{SYSTEM}}
 
 # Run integration tests
 test:
