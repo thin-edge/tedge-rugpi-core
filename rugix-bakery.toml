@@ -26,7 +26,7 @@ target = "generic-grub-efi"
 # - Raspberry Pi 5
 # - Raspberry Pi 4 (with recent firmware)
 # - Raspberry Pi CM4 (with recent firmware)
-[systems.raspios-tedge-pi5]
+[systems.raspios-tedge-arm64-tryboot]
 layer = "raspios-tedge"
 architecture = "arm64"
 target = "rpi-tryboot"
@@ -35,7 +35,18 @@ target = "rpi-tryboot"
 # - Raspberry Pi 5
 # - Raspberry Pi 4 (with recent firmware)
 # - Raspberry Pi CM4 (with recent firmware)
-[systems.raspios-tedge-pi3]
+# - Raspberry Pi 3
+# - Raspberry Pi Zero 2w
+# - Raspberry Pi 2
+[systems.raspios-tedge-arm64]
 layer = "raspios-tedge"
 architecture = "arm64"
+target = "rpi-uboot"
+
+# Compatible with:
+# - Raspberry Pi 1
+# - Raspberry Pi Zero
+[systems.raspios-tedge-armhf]
+layer = "raspios-tedge"
+architecture = "armhf"
 target = "rpi-uboot"
