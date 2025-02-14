@@ -20,6 +20,7 @@ Rugix supports running an image in a VM to facilitate local development (without
 To start a local virtual machine, run the following commands:
 
 1. Start the vm (this will build the system image if necessary)
+
     ```sh
     just start-vm
     ```
