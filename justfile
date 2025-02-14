@@ -30,7 +30,11 @@ list-systems:
     @echo just SYSTEM=example build-image
     @echo
 
-#
+# Install cross-platform tools
+build-setup:
+    docker run --privileged --rm tonistiigi/binfmt --install all
+
+# Build an image
 build-image:
     ./run-bakery bake image {{SYSTEM}}
 
