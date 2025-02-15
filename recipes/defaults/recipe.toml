@@ -8,4 +8,10 @@ dependencies = [
     "set-wifi",
     "rugix-extra/simple-sbom",
     "ssh",
+
+    # containers
+    "docker",
+
+    # default cmdline options
+    "boot-options",
 ]
