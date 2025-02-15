@@ -12,4 +12,4 @@ cat /etc/resolv.conf > /run/systemd/resolve/stub-resolv.conf
 apt-get install -y systemd-resolved
 systemctl enable systemd-resolved.service
 rm -f /etc/resolv.conf
-ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf 
+ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
