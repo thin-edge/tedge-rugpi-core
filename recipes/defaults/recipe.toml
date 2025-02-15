@@ -10,8 +10,12 @@ dependencies = [
     "ssh",
 
     # containers
-    "docker",
+    # TODO: Fails on vm due to br_netfilter warning
+    # "docker",
 
     # default cmdline options
     "boot-options",
+
+    # enable mdns (for statically compiled musl binaries)
+    "systemd-resolved",
 ]
