@@ -101,6 +101,10 @@ if ! grep -q '^pid_file' /etc/mosquitto/mosquitto.conf; then
     install -D -m 644 "${RECIPE_DIR}/files/custom.conf" -t /etc/tedge/mosquitto-conf/
 fi
 
+# Use default tedge mosquitto settings so mosquitto is functional before connecting to a cloud
+# Note: These settings will be overridden on `tedge connect`
+install -D -m 644 -g tedge -o tedge "${RECIPE_DIR}/files/tedge-mosquitto.conf" -t /etc/tedge/mosquitto-conf/
+
 # Persist tedge configuration and related components (e.g. mosquitto)
 install -D -m 644 "${RECIPE_DIR}/files/tedge-config.toml" -t /etc/rugix/state
 
