@@ -1,0 +1,5 @@
+[[persist]]
+directory = "/etc/containers"
+
+[[persist]]
+directory = "/var/lib/containers"

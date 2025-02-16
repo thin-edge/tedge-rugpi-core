@@ -1,0 +1,1 @@
+tedge  ALL = (ALL) NOPASSWD: /usr/bin/tedge-container, /usr/bin/podman
