@@ -1,3 +1,6 @@
+# Load system recipes (generated via `just gen`)
+import 'systems.just'
+
 # System image. Default to amd64 if the arch does not match
 DEFAULT_SYSTEM := if arch() == "aarch64" {
     "debian-bookworm-tedge-efi-arm64"
@@ -58,3 +61,15 @@ start-vm: prepare
 connect-vm:
     [ -f ./tests/id_rsa ] && ssh-add ./tests/id_rsa
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2222 root@127.0.0.1
+
+# Generate just file for system images (for improved tab completion)
+generate:
+    #!/bin/sh -e
+    echo "# Auto generated: DO NOT EDIT" > systems.just
+    
+    for name in $(grep '\[systems..*]' rugix-bakery.toml | tr -d '[]' | cut -d. -f2-); do
+        echo "" >> systems.just
+        echo "# system: $name" >> systems.just
+        echo "$name type='image':" >> systems.just
+        echo "    just SYSTEM=$name build-{{{{type}}" >> systems.just
+    done
