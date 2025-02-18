@@ -33,3 +33,6 @@ install -D -m 0644 "${RECIPE_DIR}/files/tedge-networkcontainer.conf" -t /etc/ted
 
 # Add sudoers rules
 install -D -m 0644 "${RECIPE_DIR}/files/suoders.tedge-container-plugin" -T /etc/sudoers.d/tedge-container-plugin
+
+# FIXME: Enable the service by default by disable it due to an issue when running in a vm
+systemctl disable docker.service
