@@ -32,7 +32,6 @@ architecture = "arm64"
 target = "rpi-tryboot"
 
 # Compatible with:
-# - Raspberry Pi 5
 # - Raspberry Pi 4 (with recent firmware)
 # - Raspberry Pi CM4 (with recent firmware)
 # - Raspberry Pi 3
