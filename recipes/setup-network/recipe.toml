@@ -1,1 +1,4 @@
 description = "setup network"
+dependencies = [
+    "core/pkg-update",
+]

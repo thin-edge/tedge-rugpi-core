@@ -1,6 +1,10 @@
 description = "install thin-edge.io"
 priority = 20_000
 
+dependencies = [
+    "core/pkg-update",
+]
+
 [parameters]
 # Control which thin-edge.io release channel to install from
 # Values:
