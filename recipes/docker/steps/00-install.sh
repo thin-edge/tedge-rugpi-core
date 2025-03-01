@@ -1,5 +1,16 @@
 #!/bin/bash -e
 
+# Check if Debian trixie is being sued and silently skip it as docker isn't available for trixie yet
+if [ -f /etc/os-release ]; then
+  # shellcheck disable=SC1091
+  . /etc/os-release
+fi
+
+if [ "$VERSION_CODENAME" = "trixie" ]; then
+  echo "WARNING: Skipping docker installation as it is not supported on trixie" >&2
+  exit 0
+fi
+
 # Add Docker's official GPG key:
 
 apt-get update
