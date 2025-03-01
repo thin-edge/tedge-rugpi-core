@@ -1,0 +1,6 @@
+description = "Configure thin-edge.io Community Repository"
+priority = 100_000
+
+dependencies = [
+    "core/pkg-update",
+]

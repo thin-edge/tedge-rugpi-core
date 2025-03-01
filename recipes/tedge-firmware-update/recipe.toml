@@ -1,6 +1,10 @@
 description = "Add workflow scripts to support firmware updates"
 priority = 10_000
-dependencies = ["thin-edge.io", "health-check"]
+dependencies = [
+    "core/pkg-update",
+    "thin-edge.io",
+    "health-check",
+]
 
 [parameters]
 autorollback = { default = true }
