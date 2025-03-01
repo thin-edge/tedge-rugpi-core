@@ -40,6 +40,8 @@ jobs:
     name: Bake Image ${{ matrix.job.system }}
     runs-on: ubuntu-latest
     needs: info
+    env:
+      IMAGE_NAME: ${{ matrix.job.system }}_${{ needs.info.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
@@ -66,10 +68,9 @@ jobs:
           IMAGE_CONFIG: ${{secrets.IMAGE_CONFIG || ''}}
         run: |
           # Add image name marker file (and to .env for easier lookup)
-          IMAGE_NAME="${{ matrix.job.system }}_${{ needs.info.outputs.version }}"
-          echo "${{needs.info.outputs.version}}_${{ matrix.job.system }}" > .image
+          echo "${{ env.IMAGE_NAME }}" > .image
           cat .image
-          echo "IMAGE_NAME=$IMAGE_NAME" > .env
+          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" > .env
 
           if [ -n "$IMAGE_CONFIG" ]; then
             echo "Adding custom IMAGE_CONFIG settings to .env"
@@ -86,10 +87,10 @@ jobs:
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.job.system }}_${{ needs.info.outputs.version }}
+          name: ${{ env.IMAGE_NAME }}
           path: |
             build/${{ matrix.job.system }}/system.img
-            build/${{ matrix.job.system }}/system.
+            build/${{ matrix.job.system }}/system.rugixb
             *.sbom.txt
 
   release:
