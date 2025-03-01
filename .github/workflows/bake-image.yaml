@@ -5,6 +5,7 @@ on:
   pull_request:
   workflow_dispatch:
   push:
+    branches: [v0.8-rugix]
     tags:
       - "*"
 
