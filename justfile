@@ -12,10 +12,17 @@ DEFAULT_SYSTEM := if arch() == "aarch64" {
 
 SYSTEM := env("SYSTEM", DEFAULT_SYSTEM)
 
+# Default version (info only)
+export VERSION := env_var_or_default("VERSION", `date +'%Y%m%d.%H%M'`)
+
 # Use ipv6 network on the host so it does not conflict with the docker in docker inside the VM
 # See https://github.com/silitics/rugix/issues/49
 DOCKER_NETWORK := "rugix-net"
 DOCKER_FLAGS := "--network=" + DOCKER_NETWORK
+
+# Generate a version name (that can be used in follow up commands)
+generate_version:
+    @echo "{{VERSION}}"
 
 prepare:
     #!/usr/bin/env bash

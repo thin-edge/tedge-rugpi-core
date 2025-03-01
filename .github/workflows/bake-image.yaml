@@ -1,0 +1,118 @@
+name: Bake Image
+permissions:
+  contents: write
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  info:
+    name: Build information
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.info.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: taiki-e/install-action@just
+      - id: info
+        name: Get Version
+        run: |
+          case "${GITHUB_REF}" in
+            refs/tags/*)
+              version="${GITHUB_REF#refs/*/}"
+              echo "Using version from tag: $version"
+              ;;
+            *)
+              version="$(just generate_version)"
+              echo "Using version from timestamp: $version"
+              ;;
+          esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  bake-image:
+    name: Bake Image ${{ matrix.job.system }}
+    runs-on: ubuntu-latest
+    needs: info
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - { system: debian-trixie-tedge-efi-arm64 }
+          - { system: debian-trixie-tedge-efi-amd64 }
+          - { system: debian-bookworm-tedge-efi-arm64 }
+          - { system: debian-bookworm-tedge-efi-amd64 }
+          - { system: raspios-tedge-arm64-tryboot }
+          - { system: raspios-tedge-arm64 }
+          - { system: raspios-tedge-armhf }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: taiki-e/install-action@just
+
+      - name: Install dependencies
+        run: just build-setup
+
+      - name: Configure .env
+        env:
+          IMAGE_CONFIG: ${{secrets.IMAGE_CONFIG || ''}}
+        run: |
+          # Add image name marker file (and to .env for easier lookup)
+          IMAGE_NAME="${{ matrix.job.system }}_${{ needs.info.outputs.version }}"
+          echo "${{needs.info.outputs.version}}_${{ matrix.job.system }}" > .image
+          cat .image
+          echo "IMAGE_NAME=$IMAGE_NAME" > .env
+
+          if [ -n "$IMAGE_CONFIG" ]; then
+            echo "Adding custom IMAGE_CONFIG settings to .env"
+            echo "$IMAGE_CONFIG" >> .env
+          fi
+
+      - name: Build image
+        env:
+          VERSION: ${{needs.info.outputs.version}}
+        run: |
+          just SYSTEM=${{ matrix.job.system }} build-image
+          just SYSTEM=${{ matrix.job.system }} build-bundle
+
+      - name: Upload Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.job.system }}_${{ needs.info.outputs.version }}
+          path: |
+            build/${{ matrix.job.system }}/system.img
+            build/${{ matrix.job.system }}/system.
+            *.sbom.txt
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - info
+      - bake-image
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+      - name: Show release artifacts
+        run: ls -l release/*/*
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          generate_release_notes: true
+          draft: true
+          files: |
+            ./release/*/*
+            ./release/*/*/*
