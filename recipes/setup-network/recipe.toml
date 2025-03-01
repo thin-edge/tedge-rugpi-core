@@ -1,3 +1,4 @@
+#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
 description = "setup network"
 dependencies = [
     "core/pkg-update",

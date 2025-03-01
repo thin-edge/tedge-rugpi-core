@@ -1,1 +1,2 @@
+#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
 description = "Install and configure systemd-resolved to enable mdns DNS resolution. This recipe should only be added to the final layer due to chroot incompatibilities during building"
