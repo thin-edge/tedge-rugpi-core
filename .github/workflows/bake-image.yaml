@@ -38,7 +38,7 @@ jobs:
 
   bake-image:
     name: Bake Image ${{ matrix.job.system }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.job.runner }}
     needs: info
     env:
       IMAGE_NAME: ${{ matrix.job.system }}_${{ needs.info.outputs.version }}
@@ -46,13 +46,13 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { system: debian-trixie-tedge-efi-arm64 }
-          - { system: debian-trixie-tedge-efi-amd64 }
-          - { system: debian-bookworm-tedge-efi-arm64 }
-          - { system: debian-bookworm-tedge-efi-amd64 }
-          - { system: raspios-tedge-arm64-tryboot }
-          - { system: raspios-tedge-arm64 }
-          - { system: raspios-tedge-armhf }
+          - { system: debian-trixie-tedge-efi-arm64, runner: ubuntu-24.04-arm }
+          - { system: debian-trixie-tedge-efi-amd64, runner: ubuntu-latest }
+          - { system: debian-bookworm-tedge-efi-arm64, runner: ubuntu-24.04-arm }
+          - { system: debian-bookworm-tedge-efi-amd64, runner: ubuntu-latest }
+          - { system: raspios-tedge-arm64-tryboot, runner: ubuntu-24.04-arm }
+          - { system: raspios-tedge-arm64, runner: ubuntu-24.04-arm }
+          - { system: raspios-tedge-armhf, runner: ubuntu-24.04-arm }
     steps:
       - uses: actions/checkout@v4
         with:
