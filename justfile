@@ -12,6 +12,11 @@ DEFAULT_SYSTEM := if arch() == "aarch64" {
 
 SYSTEM := env("SYSTEM", DEFAULT_SYSTEM)
 
+# Use ipv6 network on the host so it does not conflict with the docker in docker inside the VM
+# See https://github.com/silitics/rugix/issues/49
+DOCKER_NETWORK := "rugix-net"
+DOCKER_FLAGS := "--network=" + DOCKER_NETWORK
+
 prepare:
     #!/usr/bin/env bash
     if [ ! -f tests/id_rsa ]; then
@@ -24,6 +29,8 @@ prepare:
     else
         echo "$PUB_KEY" >> .env
     fi
+
+    docker network inspect {{DOCKER_NETWORK}} >/dev/null 2>&1 || docker network create --ipv6 -o com.docker.network.enable_ipv4=false {{DOCKER_NETWORK}}
 
 # list available systems that can be built
 list-systems:
@@ -55,7 +62,7 @@ test:
 
 # Start vm
 start-vm: prepare
-    ./run-bakery run {{SYSTEM}}
+    DOCKER_FLAGS="{{DOCKER_FLAGS}}" ./run-bakery run {{SYSTEM}}
 
 # Connect to vm
 connect-vm:
