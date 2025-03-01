@@ -1,0 +1,5 @@
+[[persist]]
+directory = "/etc/rancher/k3s"
+
+[[persist]]
+directory = "/var/lib/rancher/k3s"

@@ -1,0 +1,4 @@
+description = "Work-in-progress - install k3s"
+dependencies = [
+    "core/pkg-update",
+]
