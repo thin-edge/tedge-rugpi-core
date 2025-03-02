@@ -172,7 +172,8 @@ download() {
         last_part=$(echo "$partial_path" | rev | cut -d/ -f1 | rev)
         local_file="$TEDGE_DATA/${last_part}.firmware"
         log "Manually downloading artifact from $tedge_url and saving to $local_file"
-        wget -c -O "$local_file" "$tedge_url" >&2
+
+        download_file "$tedge_url" "$local_file"
         log "Downloaded file from: $tedge_url"
         update_state "$(printf '{"url":"%s"}\n' "$local_file")"
     else
@@ -183,27 +184,48 @@ download() {
 
 download_file() {
     url="$1"
+
+    # Output file. Defaults to stdout, "-"
+    output_file="-"
+    if [ $# -gt 1 ]; then
+        output_file="$2"
+    fi
+
     # Use curl so that netrc files can be supported
     case "$url" in
         *zip)
             # decompress using bsdtar as it supports unzipping via streaming
             # so that we don't have to download the file, unzip, then pass it on
+            if [ "$output_file" != "-" ]; then
+                curl -sfL \
+                    --connect-timeout 30 \
+                    --retry 5 \
+                    --retry-delay 0 \
+                    --netrc-file "$NETRC_FILE" \
+                    --netrc-optional \
+                    "$url" \
+                | bsdtar -x -O > "$output_file"
+            else
+                # stream to stdout
+                curl -sfL \
+                    --connect-timeout 30 \
+                    --retry 5 \
+                    --retry-delay 0 \
+                    --netrc-file "$NETRC_FILE" \
+                    --netrc-optional \
+                    "$url" \
+                | bsdtar -x -O
+            fi
+            ;;
+        *)
             curl -sfL \
                 --connect-timeout 30 \
                 --retry 5 \
                 --retry-delay 0 \
                 --netrc-file "$NETRC_FILE" \
                 --netrc-optional \
-                "$url" \
-            | bsdtar -x -O
-            ;;
-        *)
-             curl -sfL \
-                --connect-timeout 30 \
-                --retry 5 \
-                --retry-delay 0 \
-                --netrc-file "$NETRC_FILE" \
-                --netrc-optional \
+                -o "$output_file" \
+                -C - \
                 "$url"
             ;;
     esac
