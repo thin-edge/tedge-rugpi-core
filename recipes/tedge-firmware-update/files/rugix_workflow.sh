@@ -5,6 +5,7 @@ FIRMWARE_VERSION=
 FIRMWARE_URL=
 FIRMWARE_META_FILE=/etc/tedge/.firmware
 MANUAL_DOWNLOAD=0
+NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 
 # Exit codes
 OK=0
@@ -180,13 +181,41 @@ download() {
     fi
 }
 
+download_file() {
+    url="$1"
+    # Use curl so that netrc files can be supported
+    case "$url" in
+        *zip)
+            # decompress using bsdtar as it supports unzipping via streaming
+            # so that we don't have to download the file, unzip, then pass it on
+            curl -sfL \
+                --connect-timeout 30 \
+                --retry 5 \
+                --retry-delay 0 \
+                --netrc-file "$NETRC_FILE" \
+                --netrc-optional \
+                "$url" \
+            | bsdtar -x -O
+            ;;
+        *)
+             curl -sfL \
+                --connect-timeout 30 \
+                --retry 5 \
+                --retry-delay 0 \
+                --netrc-file "$NETRC_FILE" \
+                --netrc-optional \
+                "$url"
+            ;;
+    esac
+}
+
 install() {
     url="$1"
     set +e
     case "$url" in
         http://*|https://*)
             log "Downloading and streaming image to rugix"
-            wget -c -q -t 0 -O - "$url" | $SUDO rugix-ctrl update install --reboot no -
+            download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
             ;;
         *)
             # It is a file
