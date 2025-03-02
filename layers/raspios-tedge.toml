@@ -4,4 +4,7 @@ parent = "raspios"
 recipes = [
     "core/rpi-raspios-setup",
     "defaults",
+
+    # SBOM
+    "rugix-extra/simple-sbom",
 ]

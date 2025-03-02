@@ -7,7 +7,6 @@ dependencies = [
     "essentials",
     "persist-network-manager",
     "set-wifi",
-    "rugix-extra/simple-sbom",
     "ssh",
 
     # containers

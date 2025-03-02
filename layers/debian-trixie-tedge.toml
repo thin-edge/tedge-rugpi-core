@@ -7,4 +7,7 @@ recipes = [
 
     # Setup the network
     "setup-network",
+
+    # SBOM
+    "rugix-extra/simple-sbom",
 ]
