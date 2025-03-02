@@ -37,7 +37,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
   bake-image:
-    name: Bake Image ${{ matrix.job.system }}
+    name: Bake ${{ matrix.job.system }}
     runs-on: ${{ matrix.job.runner }}
     needs: info
     env:
