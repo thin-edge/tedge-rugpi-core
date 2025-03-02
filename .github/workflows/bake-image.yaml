@@ -81,32 +81,34 @@ jobs:
       - name: Build image
         run: |
           just SYSTEM=${{ matrix.job.system }} build-image ${{ env.IMAGE_NAME }}.img
+          mv build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
+
+      - name: Build bundle
+        run: |
           just SYSTEM=${{ matrix.job.system }} build-bundle ${{ env.IMAGE_NAME }}.rugixb
 
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.job.system }}-image
+          name: ${{ env.IMAGE_NAME }}.img
           path: |
             build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_NAME }}.sbom.txt
+          path: |
+            build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
 
       - name: Upload Update Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.job.system }}-bundle
+          name: ${{ env.IMAGE_NAME }}.rugixb
           # rugixb is already compressed
           compression-level: 0
           path: |
             build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.rugixb
-
-      - name: Upload SBOM
-        # TODO: Waiting for https://github.com/silitics/rugix-extra/pull/3 to be merged
-        if: ${{ false }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.job.system }}-sbom
-          path: |
-            build/${{ matrix.job.system }}/artifacts/sbom.txt
 
   release:
     name: Release
