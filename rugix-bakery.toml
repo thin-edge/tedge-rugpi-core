@@ -2,23 +2,23 @@
 [repositories]
 rugix-extra = { git = "https://github.com/silitics/rugix-extra.git", branch = "main" }
 
-[systems.debian-trixie-tedge-efi-arm64]
-layer = "debian-trixie-tedge-efi"
+[systems.tedge-debian-trixie-efi-arm64]
+layer = "tedge-debian-trixie-efi"
 architecture = "arm64"
 target = "generic-grub-efi"
 
-[systems.debian-trixie-tedge-efi-amd64]
-layer = "debian-trixie-tedge-efi"
+[systems.tedge-debian-trixie-efi-amd64]
+layer = "tedge-debian-trixie-efi"
 architecture = "amd64"
 target = "generic-grub-efi"
 
-[systems.debian-bookworm-tedge-efi-arm64]
-layer = "debian-bookworm-tedge-efi"
+[systems.tedge-debian-bookworm-efi-arm64]
+layer = "tedge-debian-bookworm-efi"
 architecture = "arm64"
 target = "generic-grub-efi"
 
-[systems.debian-bookworm-tedge-efi-amd64]
-layer = "debian-bookworm-tedge-efi"
+[systems.tedge-debian-bookworm-efi-amd64]
+layer = "tedge-debian-bookworm-efi"
 architecture = "amd64"
 target = "generic-grub-efi"
 
@@ -26,8 +26,8 @@ target = "generic-grub-efi"
 # - Raspberry Pi 5
 # - Raspberry Pi 4 (with recent firmware)
 # - Raspberry Pi CM4 (with recent firmware)
-[systems.raspios-tedge-arm64-tryboot]
-layer = "raspios-tedge"
+[systems.tedge-raspios-arm64-tryboot]
+layer = "tedge-raspios"
 architecture = "arm64"
 target = "rpi-tryboot"
 
@@ -37,15 +37,15 @@ target = "rpi-tryboot"
 # - Raspberry Pi 3
 # - Raspberry Pi Zero 2w
 # - Raspberry Pi 2
-[systems.raspios-tedge-arm64]
-layer = "raspios-tedge"
+[systems.tedge-raspios-arm64]
+layer = "tedge-raspios"
 architecture = "arm64"
 target = "rpi-uboot"
 
 # Compatible with:
 # - Raspberry Pi 1
 # - Raspberry Pi Zero
-[systems.raspios-tedge-armhf]
-layer = "raspios-tedge"
+[systems.tedge-raspios-armhf]
+layer = "tedge-raspios"
 architecture = "armhf"
 target = "rpi-uboot"

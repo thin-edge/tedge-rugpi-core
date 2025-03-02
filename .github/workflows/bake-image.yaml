@@ -47,13 +47,13 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { system: debian-trixie-tedge-efi-arm64, runner: ubuntu-24.04-arm }
-          - { system: debian-trixie-tedge-efi-amd64, runner: ubuntu-latest }
-          - { system: debian-bookworm-tedge-efi-arm64, runner: ubuntu-24.04-arm }
-          - { system: debian-bookworm-tedge-efi-amd64, runner: ubuntu-latest }
-          - { system: raspios-tedge-arm64-tryboot, runner: ubuntu-24.04-arm }
-          - { system: raspios-tedge-arm64, runner: ubuntu-24.04-arm }
-          - { system: raspios-tedge-armhf, runner: ubuntu-24.04-arm }
+          - { system: tedge-debian-trixie-efi-arm64, runner: ubuntu-24.04-arm }
+          - { system: tedge-debian-trixie-efi-amd64, runner: ubuntu-latest }
+          - { system: tedge-debian-bookworm-efi-arm64, runner: ubuntu-24.04-arm }
+          - { system: tedge-debian-bookworm-efi-amd64, runner: ubuntu-latest }
+          - { system: tedge-raspios-arm64-tryboot, runner: ubuntu-24.04-arm }
+          - { system: tedge-raspios-arm64, runner: ubuntu-24.04-arm }
+          - { system: tedge-raspios-armhf, runner: ubuntu-24.04-arm }
     steps:
       - uses: actions/checkout@v4
         with:
