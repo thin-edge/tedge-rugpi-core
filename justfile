@@ -52,16 +52,16 @@ build-setup:
     docker run --privileged --rm tonistiigi/binfmt --install all
 
 # Build an image
-build-image:
-    ./run-bakery bake image {{SYSTEM}}
+build-image OUTPUT="system.img":
+    ./run-bakery bake image {{SYSTEM}} build/{{SYSTEM}}/{{OUTPUT}}
 
 # Build bundle (uncompressed)
-build-bundle-uncompressed:
-    ./run-bakery bake bundle --without-compression {{SYSTEM}}
+build-bundle-uncompressed OUTPUT="system.rugixb":
+    ./run-bakery bake bundle --without-compression {{SYSTEM}} build/{{SYSTEM}}/{{OUTPUT}}
 
 # Build build (compressed)
-build-bundle:
-    ./run-bakery bake bundle {{SYSTEM}}
+build-bundle OUTPUT="system.rugixb":
+    ./run-bakery bake bundle {{SYSTEM}} build/{{SYSTEM}}/{{OUTPUT}}
 
 # Run integration tests
 test:
