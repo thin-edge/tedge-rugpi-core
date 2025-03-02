@@ -3,11 +3,11 @@ import 'systems.just'
 
 # System image. Default to amd64 if the arch does not match
 DEFAULT_SYSTEM := if arch() == "aarch64" {
-    "tedge-debian-bookworm-efi-arm64"
+    "tedge-debian-12-efi-arm64"
 } else if arch() == "x86_64"  {
-    "tedge-debian-bookworm-efi-amd64"
+    "tedge-debian-12-efi-amd64"
 } else {
-    "tedge-debian-bookworm-efi-amd64"
+    "tedge-debian-12-efi-amd64"
 }
 
 SYSTEM := env("SYSTEM", DEFAULT_SYSTEM)
