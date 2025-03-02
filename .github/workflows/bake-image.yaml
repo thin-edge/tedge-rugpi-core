@@ -85,7 +85,7 @@ jobs:
 
       - name: Compress Image (xz)
         run: |
-          sudo xz -0 -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
+          sudo xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
 
       - name: Build bundle
         run: |
@@ -94,7 +94,7 @@ jobs:
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.IMAGE_NAME }}.img
+          name: ${{ env.IMAGE_NAME }}.img.xz
           compression-level: 0
           path: |
             build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img.xz
