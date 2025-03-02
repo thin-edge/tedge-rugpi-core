@@ -42,6 +42,7 @@ jobs:
     needs: info
     env:
       IMAGE_NAME: ${{ matrix.job.system }}_${{ needs.info.outputs.version }}
+      VERSION: ${{needs.info.outputs.version}}
     strategy:
       fail-fast: false
       matrix:
@@ -78,8 +79,6 @@ jobs:
           fi
 
       - name: Build image
-        env:
-          VERSION: ${{needs.info.outputs.version}}
         run: |
           just SYSTEM=${{ matrix.job.system }} build-image ${{ env.IMAGE_NAME }}.img
           just SYSTEM=${{ matrix.job.system }} build-bundle ${{ env.IMAGE_NAME }}.rugixb
