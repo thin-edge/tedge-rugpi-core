@@ -73,6 +73,9 @@ jobs:
           cat .image
           echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" > .env
 
+          echo "Adding github repo owner (${{ github.repository_owner }}) to 'SSH_GITHUB_OWNER' variable to load any publish ssh keys if they exist"
+          echo "SSH_GITHUB_OWNER=${{ github.repository_owner }}" >> .env
+
           if [ -n "$IMAGE_CONFIG" ]; then
             echo "Adding custom IMAGE_CONFIG settings to .env"
             echo "$IMAGE_CONFIG" >> .env

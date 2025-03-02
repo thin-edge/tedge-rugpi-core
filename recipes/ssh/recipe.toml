@@ -4,3 +4,8 @@ dependencies = ["core/ssh"]
 
 [parameters]
 root_authorized_keys = { default = "" }
+
+# CSV list of GitHub usernames to retrieve their public ssh keys from
+# to be appended to root's authorized keys, e.g. myuser,foo,bar
+# The keys are retrieved from the public URL: https://github.com/<user>.keys
+root_authorized_keys_github_users = { default = "" }
