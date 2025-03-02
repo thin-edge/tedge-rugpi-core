@@ -81,7 +81,11 @@ jobs:
       - name: Build image
         run: |
           just SYSTEM=${{ matrix.job.system }} build-image ${{ env.IMAGE_NAME }}.img
-          mv build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
+          sudo cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
+
+      - name: Compress Image (xz)
+        run: |
+          sudo xz -0 -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
 
       - name: Build bundle
         run: |
@@ -91,8 +95,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}.img
+          compression-level: 0
           path: |
-            build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
+            build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img.xz
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
