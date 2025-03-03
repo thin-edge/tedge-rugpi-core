@@ -52,8 +52,9 @@ build-setup:
     docker run --privileged --rm tonistiigi/binfmt --install all
 
 # Build an image
-build-image OUTPUT="system.img":
-    ./run-bakery bake image {{SYSTEM}} build/{{SYSTEM}}/{{OUTPUT}}
+# Note: use default output and rename later. see https://github.com/silitics/rugix/issues/53
+build-image:
+    ./run-bakery bake image {{SYSTEM}}
 
 # Build bundle (uncompressed)
 build-bundle-uncompressed OUTPUT="system.rugixb":

@@ -83,7 +83,8 @@ jobs:
 
       - name: Build image
         run: |
-          just SYSTEM=${{ matrix.job.system }} build-image ${{ env.IMAGE_NAME }}.img
+          just SYSTEM=${{ matrix.job.system }} build-image
+          sudo cp build/${{ matrix.job.system }}/system.img build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
           sudo cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
 
       - name: Compress Image (xz)
