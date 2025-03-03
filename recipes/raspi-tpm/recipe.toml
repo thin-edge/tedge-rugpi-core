@@ -1,0 +1,2 @@
+description = "Enable tpm device tree overlay tpm-slb9670"
+priority = 500_000  # Execute rather early to allow recipes to modify it
