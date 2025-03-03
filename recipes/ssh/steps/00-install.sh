@@ -53,7 +53,7 @@ download_keys_from_github() {
             if [ -n "$public_ssh_key" ]; then
                 echo "Adding key/s from Github User ${gh_username}. url=${gh_url}" >&2
                 public_ssh_key=$(printf '\n# %s\n%s\n' "$gh_username" "$public_ssh_key")
-                echo "  $public_ssh_key" >&2
+                printf '  %s\n\n' "$public_ssh_key" >&2
                 add_ssh_key "$public_ssh_key"
             else
                 echo "WARNING: Could not find a public ssh key. url=$gh_url" >&2
