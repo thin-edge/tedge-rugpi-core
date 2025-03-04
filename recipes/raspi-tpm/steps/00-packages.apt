@@ -1,0 +1,6 @@
+p11-kit
+tpm-tools-pkcs11
+libtpm2-pkcs11-1
+gnutls-bin
+tpm2-openssl
+tpm2-tools

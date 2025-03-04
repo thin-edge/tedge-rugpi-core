@@ -1,0 +1,5 @@
+gnutls-utils
+p11-kit
+tpm2-pkcs11
+tpm2-tools
+tpm2-tss-engine
