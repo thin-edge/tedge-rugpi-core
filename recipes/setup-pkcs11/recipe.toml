@@ -1,0 +1,5 @@
+#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
+description = "Setup PKCS#11 (cryptoki) tools"
+dependencies = [
+    "core/pkg-update",
+]
