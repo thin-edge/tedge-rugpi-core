@@ -79,36 +79,44 @@ jobs:
       - name: Build image
         run: |
           just SYSTEM=${{ matrix.job.system }} build-image
+
+      - name: Rename artifacts
+        run: |
           sudo cp build/${{ matrix.job.system }}/system.img build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
           sudo cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
-
-      - name: Compress Image (xz)
-        run: |
-          sudo xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
-
-      - name: Build bundle
-        run: |
-          just SYSTEM=${{ matrix.job.system }} build-bundle ${{ env.IMAGE_NAME }}.rugixb
-
-      - name: Upload Image
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.IMAGE_NAME }}.img.xz
-          compression-level: 0
-          path: |
-            build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img.xz
+          ls -l build/${{ matrix.job.system }}/
+          ls -l build/${{ matrix.job.system }}/artifacts/
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}.sbom.txt
+          if-no-files-found: error
           path: |
             build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
+
+      - name: Compress Image (xz)
+        run: |
+          sudo xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
+      
+      - name: Upload Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_NAME }}.img.xz
+          if-no-files-found: error
+          compression-level: 0
+          path: |
+            build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img.xz
+
+      - name: Build bundle
+        run: |
+          just SYSTEM=${{ matrix.job.system }} build-bundle ${{ env.IMAGE_NAME }}.rugixb
 
       - name: Upload Update Bundle
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}.rugixb
+          if-no-files-found: error
           # rugixb is already compressed
           compression-level: 0
           path: |
