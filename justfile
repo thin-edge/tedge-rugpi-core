@@ -15,6 +15,9 @@ SYSTEM := env("SYSTEM", DEFAULT_SYSTEM)
 # Default version (info only)
 export VERSION := env_var_or_default("VERSION", `date +'%Y%m%d.%H%M'`)
 
+# Release version id (combined name and version)
+export RELEASE_ID := env_var_or_default("RELEASE_ID", SYSTEM + "_" + VERSION)
+
 # Use ipv6 network on the host so it does not conflict with the docker in docker inside the VM
 # See https://github.com/silitics/rugix/issues/49
 DOCKER_NETWORK := "rugix-net"
@@ -54,15 +57,27 @@ build-setup:
 # Build an image
 # Note: use default output and rename later. see https://github.com/silitics/rugix/issues/53
 build-image:
-    ./run-bakery bake image {{SYSTEM}}
+    ./run-bakery bake image \
+        --release-id "{{RELEASE_ID}}" \
+        --release-version "{{VERSION}}" \
+        {{SYSTEM}}
 
 # Build bundle (uncompressed)
 build-bundle-uncompressed OUTPUT="system.rugixb":
-    ./run-bakery bake bundle --without-compression {{SYSTEM}} build/{{SYSTEM}}/{{OUTPUT}}
+    ./run-bakery bake bundle \
+        --release-id "{{RELEASE_ID}}" \
+        --release-version "{{VERSION}}" \
+        --without-compression \
+        {{SYSTEM}} \
+        build/{{SYSTEM}}/{{OUTPUT}}
 
 # Build build (compressed)
 build-bundle OUTPUT="system.rugixb":
-    ./run-bakery bake bundle {{SYSTEM}} build/{{SYSTEM}}/{{OUTPUT}}
+    ./run-bakery bake bundle \
+        --release-id "{{RELEASE_ID}}" \
+        --release-version "{{VERSION}}" \
+        {{SYSTEM}} \
+        build/{{SYSTEM}}/{{OUTPUT}}
 
 # Run integration tests
 test:
@@ -70,7 +85,10 @@ test:
 
 # Start vm
 start-vm: prepare
-    DOCKER_FLAGS="{{DOCKER_FLAGS}}" ./run-bakery run {{SYSTEM}}
+    DOCKER_FLAGS="{{DOCKER_FLAGS}}" ./run-bakery run \
+        --release-id "{{RELEASE_ID}}" \
+        --release-version "{{VERSION}}" \
+        {{SYSTEM}}
 
 # Connect to vm
 connect-vm:
