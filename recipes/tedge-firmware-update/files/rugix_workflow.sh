@@ -3,7 +3,6 @@ set -e
 FIRMWARE_NAME=
 FIRMWARE_VERSION=
 FIRMWARE_URL=
-FIRMWARE_META_FILE=/etc/tedge/.firmware
 MANUAL_DOWNLOAD=0
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 
@@ -317,9 +316,6 @@ commit() {
             BOOT_DEFAULT=$($SUDO rugix-ctrl system info --json | jq -r '.boot.defaultGroup' | tr '[:lower:]' '[:upper:]')
 
             log "Commit successful. New default partition is $BOOT_DEFAULT"
-            # Save firmware meta information to file (for reading on startup during normal operation)
-            local_log "Saving firmware info to $FIRMWARE_META_FILE"
-            printf 'FIRMWARE_NAME=%s\nFIRMWARE_VERSION=%s\nFIRMWARE_URL=%s\n' "$FIRMWARE_NAME" "$FIRMWARE_VERSION" "$FIRMWARE_URL" > "$FIRMWARE_META_FILE"
             ;;
         *)
             log "rugix-ctrl returned code: $EXIT_CODE. Rolling back to previous partition"

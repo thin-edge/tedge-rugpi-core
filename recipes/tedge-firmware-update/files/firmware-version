@@ -4,23 +4,23 @@
 #
 # Example file contents:
 # ```
-# tedge_rugix_default_pi45_20231203.1557
-# ```
+# {
+#   "name": "tedge-debian-12-efi-arm64",
+#   "release": {
+#     "id": "tedge-debian-12-efi-arm64",
+#     "version": "20250308.1219"
+#   }
+# }
 ##################################################
 set -e
-ARTIFACT_FILE=/etc/.build_info
+ARTIFACT_FILE=/etc/rugix/system-build-info.json
 
 if [ ! -f "$ARTIFACT_FILE" ]; then
     exit 0
 fi
 
-NAME=$(rev /etc/.build_info | cut -d_ -f2- | rev)
-VERSION=$(rev /etc/.build_info | cut -d_ -f1 | rev)
+NAME=$(jq -r '.name' "$ARTIFACT_FILE")
+VERSION=$(jq -r '.release.version // "0.0"' "$ARTIFACT_FILE")
 
 echo "name=\"$NAME\""
 echo "version=\"$VERSION\""
-
-# FIXME: Workaround since thin-edge.io does deduplication detection.
-# However this is only needed because the firmware/name is cleared on tedge-agent startup.
-# Remove once https://github.com/thin-edge/thin-edge.io/issues/2497 is resolved
-echo "updated=\"$(date)\""
