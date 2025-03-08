@@ -5,6 +5,7 @@ recipes = [
     "core/rpi-raspios-setup",
     "defaults",
     "raspi-tpm",
+    "setup-pkcs11",
 
     # SBOM
     "rugix-extra/simple-sbom",

@@ -8,6 +8,9 @@ recipes = [
     # Setup the network
     "setup-network",
 
+    # PKCS11 tools
+    "setup-pkcs11",
+
     # SBOM
     "rugix-extra/simple-sbom",
 ]
