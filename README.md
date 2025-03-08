@@ -33,4 +33,4 @@ To start a local virtual machine, run the following commands:
 
 ## Known Issues
 
-* Including the `docker` recipe causes network issues inside the image
+There are currently no known issues. If something does not work, then please create a ticket.
