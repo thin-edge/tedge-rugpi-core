@@ -12,3 +12,10 @@ type = "tedge-log-plugin"
 user = "tedge"
 group = "tedge"
 mode = 0o0644
+
+[[files]]
+path = "/etc/tedge/.netrc"
+type = "netrc"
+user = "tedge"
+group = "tedge"
+mode = 0o0660
