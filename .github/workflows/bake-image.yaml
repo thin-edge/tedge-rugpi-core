@@ -133,12 +133,13 @@ jobs:
           C8Y_USER: '${{ secrets.C8Y_USER }}'
           C8Y_PASSWORD: '${{ secrets.C8Y_PASSWORD }}'
         run: |
-          if ! c8y firmware get --id "${{ matrix.job.system }}" --silentStatusCodes 404; then
-            c8y firmware create -n --name "${{ matrix.job.system }}"
-          fi
+          FIRMWARE_ID=$(
+            c8y firmware get -n --id "${{ matrix.job.system }}" --silentStatusCodes 404 --select id -o csv ||
+              c8y firmware create -n --name "${{ matrix.job.system }}" --select id -o csv
+          )
           c8y firmware versions create \
             -n \
-            --firmware "${{ matrix.job.system }}" \
+            --firmware "$FIRMWARE_ID" \
             --version "${{ env.VERSION }}" \
             --url "${{ steps.bundle-upload-step.outputs.artifact-url }}/zip" \
             --template "{
