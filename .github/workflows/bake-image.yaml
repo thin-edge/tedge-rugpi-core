@@ -68,11 +68,6 @@ jobs:
         env:
           IMAGE_CONFIG: ${{secrets.IMAGE_CONFIG || ''}}
         run: |
-          # Add image name marker file (and to .env for easier lookup)
-          echo "${{ env.IMAGE_NAME }}" > .image
-          cat .image
-          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" > .env
-
           echo "Adding github repo owner (${{ github.repository_owner }}) to 'SSH_GITHUB_OWNER' variable to load any publish ssh keys if they exist"
           echo "SSH_GITHUB_OWNER=${{ github.repository_owner }}" >> .env
 

@@ -17,16 +17,3 @@ fi
 
 # Use symlink so that the workflow file can be updated within the image
 ln -s /usr/share/tedge-workflows/firmware_update.rugix.toml /etc/tedge/operations/firmware_update.toml
-
-
-#
-# Add build info
-#
-ARTIFACT_FILE=/etc/.build_info
-BUILD_FILE="$RUGIX_PROJECT_DIR/.image"
-
-if [ -f "$BUILD_FILE" ]; then
-    echo "Adding build info: $ARTIFACT_FILE" >&2
-    install -D -m 644 "${BUILD_FILE}" "$ARTIFACT_FILE"
-    cat "$ARTIFACT_FILE" >&2
-fi
