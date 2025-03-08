@@ -1,6 +1,6 @@
 # Rugix thin-edge.io repository
 
-**Additional recipes and layers for [Rugix](https://rugix.io).**
+**Additional recipes and layers for [Rugix](https://oss.silitics.com/rugix/).**
 
 To make the recipes and layers available, include the following in your `rugix-bakery.toml`:
 
