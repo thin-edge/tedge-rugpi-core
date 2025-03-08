@@ -127,13 +127,13 @@ jobs:
 
       - uses: reubenmiller/setup-go-c8y-cli@main
       - name: Publish firmware to c8y
-        if: ${{ github.repository_owner == 'thin-edge/tedge-rugpi-core' }}
+        if: ${{ github.repository_owner == 'thin-edge' }}
         env:
           C8Y_HOST: '${{ secrets.C8Y_HOST }}'
           C8Y_USER: '${{ secrets.C8Y_USER }}'
           C8Y_PASSWORD: '${{ secrets.C8Y_PASSWORD }}'
         run: |
-          c8y firmware get --id "${{ matrix.job.system }}" || c8y firmware create --name "${{ matrix.job.system }}"
+          c8y firmware get --id "${{ matrix.job.system }}" --silentStatusCodes 404 || c8y firmware create --name "${{ matrix.job.system }}"
           c8y firmware versions create \
             -n \
             --firmware "${{ matrix.job.system }}" \
