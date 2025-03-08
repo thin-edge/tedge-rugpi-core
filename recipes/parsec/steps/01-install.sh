@@ -1,13 +1,6 @@
 #!/bin/sh
 set -e
 
-apt-get update
-apt-get install -y \
-    parsec-service \
-    parsec-tool \
-    softhsm2 \
-    opensc
-
 install -D -m 644 "${RECIPE_DIR}/files/parsec-init.sh" -t /usr/bin/
 
 # provider config
