@@ -137,17 +137,19 @@ jobs:
             c8y firmware get -n --id "${{ matrix.job.system }}" --silentStatusCodes 404 --select id -o csv ||
               c8y firmware create -n --name "${{ matrix.job.system }}" --select id -o csv
           )
+          ARTIFACT_ID=$(echo "${{ steps.bundle-upload-step.outputs.artifact-url }}" | rev | cut -d/ -f1 | rev)
           c8y firmware versions create \
             -n \
             --firmware "$FIRMWARE_ID" \
             --version "${{ env.VERSION }}" \
-            --url "${{ steps.bundle-upload-step.outputs.artifact-url }}/zip" \
+            --url "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip" \
             --template "{
               github: {
                 ref: '${{ github.ref }}',
                 repository: '${{ github.repository }}',
                 run_id: '${{ github.run_id }}',
                 sha: '${{ github.sha }}',
+                artifactUrl: '${{ steps.bundle-upload-step.outputs.artifact-url }}',
               }
             }"
 
