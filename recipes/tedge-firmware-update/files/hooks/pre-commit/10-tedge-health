@@ -18,8 +18,11 @@ is_mapper_connected() {
     CLOUD_MAPPER="$1"
 
     if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null)" ]; then
+        # TODO: When using tedge reconnect this results in the mapper sending the clear operation
+        # but the agent sometimes does not observe it
+        tedge connect "$CLOUD_MAPPER" --test
         # Use a reconnect as it will also recreate the bridge config (in case it has changed)
-        tedge reconnect "$CLOUD_MAPPER"
+        # tedge reconnect "$CLOUD_MAPPER"
     else
         # If the configuration is not configured, then treat the device as healthy
         echo "Mapper is not configured: $CLOUD_MAPPER" >&2
