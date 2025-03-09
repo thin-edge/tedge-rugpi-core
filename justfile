@@ -88,7 +88,7 @@ start-vm: prepare
     DOCKER_FLAGS="{{DOCKER_FLAGS}}" ./run-bakery run \
         --release-id "{{RELEASE_ID}}" \
         --release-version "{{VERSION}}" \
-        {{SYSTEM}}
+        {{SYSTEM}} ||:
 
 # Connect to vm
 connect-vm:
