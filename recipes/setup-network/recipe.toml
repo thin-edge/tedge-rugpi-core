@@ -1,5 +1,7 @@
 #:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
 description = "setup network"
+# Run early to prevent resolve conf issues during building
+priority = 200_000
 dependencies = [
     "core/pkg-update",
 ]
