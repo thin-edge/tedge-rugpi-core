@@ -33,4 +33,10 @@ To start a local virtual machine, run the following commands:
 
 ## Known Issues
 
-There are currently no known issues. If something does not work, then please create a ticket.
+* After a firmware update, the tedge-agent does not accept a new firmware operations until it is restarted, as it is waiting for the previous operation to be cleared (possibly due to use `tedge reconnect c8y`)
+
+    ```log
+    Mar 09 09:46:55 rpi4-d83add90fe56 tedge-agent[831]: 2025-03-09T09:46:55.514655111Z  INFO tedge_agent::operation_workflows::actor: Waiting successful firmware_update operation to be cleared
+    ```
+
+If something does not work, then please create a ticket.
