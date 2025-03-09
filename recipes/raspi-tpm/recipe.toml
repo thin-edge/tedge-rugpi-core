@@ -1,4 +1,5 @@
 description = "Enable tpm device tree overlay tpm-slb9670"
 dependencies = [
     "core/pkg-update",
+    "thin-edge.io",
 ]

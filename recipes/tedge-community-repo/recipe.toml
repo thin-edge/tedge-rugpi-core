@@ -1,6 +1,6 @@
 #:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
 description = "Configure thin-edge.io Community Repository"
-priority = 100_000
+priority = 110_000
 
 dependencies = [
     "core/pkg-update",

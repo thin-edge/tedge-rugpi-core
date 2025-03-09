@@ -1,3 +1,6 @@
 #:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
 description = "install thin-edge.io local pki community plugin"
-priority = 10_000
+dependencies = [
+    "core/pkg-update",
+    "tedge-community-repo",
+]
