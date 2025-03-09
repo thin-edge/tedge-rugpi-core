@@ -5,6 +5,7 @@ FIRMWARE_VERSION=
 FIRMWARE_URL=
 MANUAL_DOWNLOAD=0
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
+CHECK_META_INFO=0
 
 # Exit codes
 OK=0
@@ -294,12 +295,22 @@ verify() {
         exit "$FAILED"
     fi
 
-    # Allow users to also call addition logic by adding their scripts to the /etc/health.d/ directory
-    if /usr/bin/healthcheck.sh; then
-        exit "$OK"
-    else
-        set_reason "Health check failed on new partition"
-        exit "$REQUEST_RESTART"
+    # Check that the versions match the expected otherwise people can get
+    # into bad habits of not ensuring the meta information in the operation
+    # does not match the actual image
+    # TODO: Use rugix-ctrl instead of reading the file directly (once the cli supports showing the image info)
+    if [ "$CHECK_META_INFO" = 1 ]; then
+        ARTIFACT_FILE=/etc/rugix/system-build-info.json
+        if [ -f /etc/rugix/system-build-info.json ]; then
+            ACTUAL_NAME=$(jq -r '.name' "$ARTIFACT_FILE")
+            ACTUAL_VERSION=$(jq -r '.release.version // "0.0"' "$ARTIFACT_FILE")
+
+            if [ "$ACTUAL_NAME" != "$FIRMWARE_NAME" ] || [ "$ACTUAL_VERSION" != "$FIRMWARE_VERSION" ]; then
+                DETAILS=$(printf '\n    actual: name=%s, version=%s\n  expected: name=%s, version=%s)' "$$ACTUAL_NAME" "$ACTUAL_VERSION" "$$FIRMWARE_NAME" "$FIRMWARE_VERSION")
+                set_reason "New image name does not match the values from the operation. Please check that the firmware name/version matches the actual image.${DETAILS}"
+                exit "$REQUEST_RESTART"
+            fi
+        fi
     fi
 }
 
@@ -324,6 +335,22 @@ commit() {
     exit "$EXIT_CODE"
 }
 
+rollback_successful() {
+    # TODO: Support cloud profiles and look for all enabled mappers, not just the standard names
+    MAPPERS="c8y az aws"
+    for CLOUD_MAPPER in $MAPPERS; do
+        if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null)" ]; then
+            # Use a reconnect as it will also recreate the bridge config
+            log "Reconnecting $CLOUD_MAPPER mapper"
+            if ! $SUDO tedge reconnect "$CLOUD_MAPPER"; then
+                log "WARNING: Failed to reconnect the mapper"
+            fi
+        fi
+    done
+
+    log "Firmware update failed, but the rollback was successful. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
+}
+
 case "$ACTION" in
     executing) executing; ;;
     download) download "$FIRMWARE_URL"; ;;
@@ -336,7 +363,7 @@ case "$ACTION" in
         log "Device has been restarted...continuing workflow. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
         ;;
     rollback_successful)
-        log "Firmware update failed, but the rollback was successful. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
+        rollback_successful
         ;;
     failed_restart) ;;
     *)

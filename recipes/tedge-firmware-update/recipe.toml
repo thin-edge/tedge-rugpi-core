@@ -4,7 +4,6 @@ priority = 10_000
 dependencies = [
     "core/pkg-update",
     "thin-edge.io",
-    "health-check",
 ]
 
 [parameters]

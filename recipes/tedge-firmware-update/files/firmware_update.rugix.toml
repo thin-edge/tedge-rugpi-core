@@ -44,13 +44,13 @@ script = "/usr/bin/rugix_workflow.sh failed_restart"
 on_success = { status = "failed", reason = "Device failed to restart" }
 
 [verify]
-script = "/usr/bin/rugix_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version} --url ${.payload.remoteUrl}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version}"
 on_exit.0 = { status = "commit" }
 on_exit.4 = { status = "rollback_restart", reason = "Verification failed. Rolling back to default partition" }
 on_exit._ = { status = "failed", reason = "Verification failed, no rollback necessary" }
 
 [commit]
-script = "/usr/bin/rugix_workflow.sh ${.payload.status} --firmware-name ${.payload.name} --firmware-version ${.payload.version} --url ${.payload.remoteUrl}"
+script = "/usr/bin/rugix_workflow.sh ${.payload.status}"
 on_success = "successful"
 on_error = { status = "rollback_restart", reason = "Commit failed. Rolling back to default partition" }
 

@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# Check thin-edge.io connection to the cloud
+# Whilst the connection test may be lost due to normal events (e.g. switching mobile networks)
+# however since we can't know if the network loss is due the update or not, then take the
+# safer option of assuming it is due to the update and perform a rollback.
+#
+set -e
+
+log() {
+    echo "$(date +%Y-%m-%dT%H:%M:%S) $*"
+}
+
+# TODO: Support cloud profiles and look for all enabled mappers, not just the standard names
+MAPPERS="c8y az aws"
+
+is_mapper_connected() {
+    CLOUD_MAPPER="$1"
+
+    if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null)" ]; then
+        # Use a reconnect as it will also recreate the bridge config (in case it has changed)
+        tedge reconnect "$CLOUD_MAPPER"
+    else
+        # If the configuration is not configured, then treat the device as healthy
+        echo "Mapper is not configured: $CLOUD_MAPPER" >&2
+        return 0
+    fi
+}
+
+is_healthy() {
+    for name in $MAPPERS; do
+        is_mapper_connected "$name"
+    done
+}
+
+main() {
+    NOT_OK=1
+    RETRY_DELAY=30
+
+    for _i in $(seq 1 10); do
+        if is_healthy; then
+            NOT_OK=0
+            break
+        fi
+        log "Waiting $RETRY_DELAY seconds before checking the health again"
+        sleep "$RETRY_DELAY"
+    done
+
+    exit "$NOT_OK"
+}
+
+main
