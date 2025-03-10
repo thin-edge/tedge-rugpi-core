@@ -5,6 +5,10 @@
 # * https://github.com/eclipse/mosquitto/issues/2634 (2.0.15)
 ENABLE_BACKPORTS=0
 
+# Used fixed uid/gid to avoid permission issues across A/B updates
+groupadd --system --gid 960 mosquitto
+useradd --system --no-create-home --shell "/bin/false" --uid 961 --gid 960 mosquitto
+
 DPKG_ARCH=$(dpkg --print-architecture)
 
 case "$DPKG_ARCH" in
@@ -39,12 +43,8 @@ fi
 # Enable mosquitto by default (don't rely on the systemd )
 systemctl enable mosquitto
 
-if [ -f /etc/mosquitto/mosquitto.conf ]; then
-    # remove pid_file setting as it is included in custom.conf file
-    # in mosquitto 2.0.11 this setting is valid, but it has been removed in
-    # future mosquitto versions
-    sed -i '/^pid_file.*/d' /etc/mosquitto/mosquitto.conf ||:
-fi
+# Set default mosquitto.conf file
+install -D -m 644 "${RECIPE_DIR}/files/mosquitto.conf" -t /etc/mosquitto/
 
 patch_mosquitto_2011() {
     #
@@ -56,6 +56,8 @@ patch_mosquitto_2011() {
     # Slow down the restart rate of mosquitto so it does not trip the systemd restart rate limit
     # and stop mosquitto from starting altogether
     #
+    # Note: Ensure ownership of the mosquitto.db is correct otherwise it can affect ownership between OS updates
+    #
     mkdir -p /etc/systemd/system/mosquitto.service.d
     cat << EOT > /etc/systemd/system/mosquitto.service.d/override.conf
 [Unit]
@@ -64,6 +66,8 @@ Wants=network-online.target
 
 [Service]
 RestartSec = 5
+ExecStartPre=/bin/mkdir -m 740 -p /var/lib/mosquitto
+ExecStartPre=/bin/chown -R mosquitto:mosquitto /var/lib/mosquitto
 EOT
     chmod 644 /etc/systemd/system/mosquitto.service.d/override.conf
 }
@@ -73,10 +77,14 @@ patch_mosquitto_2018() {
     # Slow down the restart rate of mosquitto so it does not trip the systemd restart rate limit
     # and stop mosquitto from starting altogether
     #
+    # Note: Ensure ownership of the mosquitto.db is correct otherwise it can affect ownership between OS updates
+    #
     mkdir -p /etc/systemd/system/mosquitto.service.d
     cat << EOT > /etc/systemd/system/mosquitto.service.d/override.conf
 [Service]
 RestartSec = 5
+ExecStartPre=/bin/mkdir -m 740 -p /var/lib/mosquitto
+ExecStartPre=/bin/chown -R mosquitto:mosquitto /var/lib/mosquitto
 EOT
     chmod 644 /etc/systemd/system/mosquitto.service.d/override.conf
 }
