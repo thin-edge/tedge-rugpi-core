@@ -7,6 +7,8 @@
 #
 set -e
 
+USE_RECONNECT="${USE_RECONNECT:-1}"
+
 log() {
     echo "$(date +%Y-%m-%dT%H:%M:%S) $*"
 }
@@ -18,11 +20,15 @@ is_mapper_connected() {
     CLOUD_MAPPER="$1"
 
     if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null)" ]; then
-        # TODO: When using tedge reconnect this results in the mapper sending the clear operation
-        # but the agent sometimes does not observe it
-        # tedge connect "$CLOUD_MAPPER" --test
-        # Use a reconnect as it will also recreate the bridge config (in case it has changed)
-        sudo tedge reconnect "$CLOUD_MAPPER"
+
+        if [ "$USE_RECONNECT" = 1 ]; then
+            # Use a reconnect as it will also recreate the bridge config (in case it has changed)
+            sudo tedge reconnect "$CLOUD_MAPPER"
+        else
+            # TODO: When using tedge reconnect this results in the mapper sending the clear operation
+            # but the agent sometimes does not observe it
+            tedge connect "$CLOUD_MAPPER" --test
+        fi
     else
         # If the configuration is not configured, then treat the device as healthy
         echo "Mapper is not configured: $CLOUD_MAPPER" >&2
