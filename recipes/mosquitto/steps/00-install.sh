@@ -3,6 +3,7 @@
 # The mosquitto repo can't be used as it does not included builds for arm64/aarch64 (only amd64 and armhf)
 # * https://github.com/eclipse/mosquitto/issues/2604 (2.0.11)
 # * https://github.com/eclipse/mosquitto/issues/2634 (2.0.15)
+ENABLE_BACKPORTS=0
 
 DPKG_ARCH=$(dpkg --print-architecture)
 
@@ -19,7 +20,7 @@ if [ -f /etc/os-release ]; then
     # shellcheck disable=SC1091
     . /etc/os-release
 fi
-if [ "${VERSION_ID:-0}" -eq 12 ]; then
+if [ "${VERSION_ID:-0}" -eq 12 ] && [ "$ENABLE_BACKPORTS" = 1 ]; then
     # bookworm: install mosquitto from backports
     echo 'deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/debian-bookworm-backports.list
     apt-get update
@@ -28,7 +29,8 @@ if [ "${VERSION_ID:-0}" -eq 12 ]; then
         mosquitto \
         mosquitto-clients
 else
-    # trixie includes the required mosquitto version
+    # install default mosquitto version
+    apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Options::=--force-confold -y --no-install-recommends install \
         mosquitto \
         mosquitto-clients
