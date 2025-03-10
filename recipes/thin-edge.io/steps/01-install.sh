@@ -14,6 +14,10 @@ fi
 
 RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
 
+# Used fixed uid/gid to avoid permission issues across A/B updates
+groupadd --system --gid 992 tedge
+useradd --system --no-create-home --shell "/bin/false" --uid 999 --gid 992 tedge
+
 # WORKAROUND: Parameters defined in the layer.toml don't seem to be passed to the recipe
 # so use an additional env variable to set some parameters until the root cause is found
 if [ -n "${TEDGE_INSTALL_CHANNEL:-}" ]; then
