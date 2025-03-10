@@ -39,6 +39,12 @@ fi
 # Enable mosquitto by default (don't rely on the systemd )
 systemctl enable mosquitto
 
+if [ -f /etc/mosquitto/mosquitto.conf ]; then
+    # remove pid_file setting as it is included in custom.conf file
+    # in mosquitto 2.0.11 this setting is valid, but it has been removed in
+    # future mosquitto versions
+    sed -i '/^pid_file.*/d' /etc/mosquitto/mosquitto.conf ||:
+fi
 
 patch_mosquitto_2011() {
     #
