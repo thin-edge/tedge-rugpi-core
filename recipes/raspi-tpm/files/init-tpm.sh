@@ -10,10 +10,53 @@ if [ $# -gt 0 ]; then
     TOKEN_URI="$1"
 fi
 
+DEVICE_ID="${DEVICE_ID:-}"
 export TOKEN_LABEL="${TOKEN_LABEL:-tedge}"
 export GNUTLS_PIN="${GNUTLS_PIN:-123456}"
 export GNUTLS_SO_PIN="${GNUTLS_SO_PIN:-123456}"
 export TPM2_PKCS11_STORE="${TPM2_PKCS11_STORE:-/etc/tedge/tpm2}"
+IS_SELF_SIGNED=0
+
+#
+# Parse arguments
+#
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --self-signed)
+            IS_SELF_SIGNED=1
+            ;;
+        --pin)
+            GNUTLS_PIN="$2"
+            shift
+            ;;
+        --so-pin)
+            GNUTLS_SO_PIN="$2"
+            shift
+            ;;
+        --device-id)
+            DEVICE_ID="$2"
+            shift
+            ;;
+    esac
+    shift
+done
+
+#
+# Enable usage with thin-edge.io
+#
+mkdir -p "$TPM2_PKCS11_STORE"
+chown -R tedge:tedge "$TPM2_PKCS11_STORE"
+tedge config set device.cryptoki.mode socket
+
+TPM_PKCS11_MODULE=$(find /usr/lib -name libtpm2_pkcs11.so | head -n1)
+
+if ! grep -q '^TEDGE_DEVICE_CRYPTOKI_MODULE_PATH=.\+' /etc/tedge/plugins/tedge-p11-server.conf; then
+    cat <<EOT > /etc/tedge/plugins/tedge-p11-server.conf
+TEDGE_DEVICE_CRYPTOKI_MODULE_PATH=$TPM_PKCS11_MODULE
+TEDGE_DEVICE_CRYPTOKI_PIN=$GNUTLS_PIN
+TPM2_PKCS11_STORE="$TPM2_PKCS11_STORE"
+EOT
+fi
 
 find_slot() {
     p11tool --list-tokens | grep "token=$" | awk '{ print $2 }' 2>/dev/null
@@ -47,6 +90,7 @@ if [ -z "$PKCS_URI" ] ;then
     echo "Setting the pin and so-pin..."
     p11tool --initialize-pin --initialize-so-pin --set-pin="$GNUTLS_PIN" --set-so-pin "$GNUTLS_SO_PIN" "$PKCS_URI"
 fi
+echo "Using token URI: $PKCS_URI" >&2
 
 #
 # Get/Create private key
@@ -61,22 +105,48 @@ fi
 #
 # Create Certificate Signing Request (CSR)
 #
-DEVICE_ID=$(tedge-identity 2>/dev/null || hostname)
-echo "Creating CSR...CN=$DEVICE_ID"
-cat <<EOT > "$TPM2_PKCS11_STORE/cert.template"
+CSR_TEMPLATE="$TPM2_PKCS11_STORE/cert.template"
+if [ ! -f "$CSR_TEMPLATE" ]; then
+    if [ -z "${DEVICE_ID:-}" ]; then
+        DEVICE_ID=$(tedge-identity 2>/dev/null)
+    fi
+
+    # If it is self-signed, then Cumulocity requires the ca property
+    # to be added, otherwise certificate will be rejected by Cumulocity
+    # when trying to upload it
+    IS_CA=""
+    if [ "$IS_SELF_SIGNED" ]; then
+        IS_CA="ca"
+    fi
+
+    cat <<EOT > "$CSR_TEMPLATE"
 organization = "Thin Edge"
 unit = "Test Device"
 #state = "QLD"
 #country = AU
 cn = "$DEVICE_ID"
 expiration_days = 365
+$IS_CA
 EOT
+fi
 
-CSR_PATH=$(tedge config get device.csr_path)
-
-certtool --generate-request --template "$TPM2_PKCS11_STORE/cert.template" --load-privkey "$KEY" --outfile "$CSR_PATH"
-echo "Created CSR: $CSR_PATH"
-cat "$CSR_PATH"
+#
+# Create CSR (to be signed externally) or create a self-signed certificate
+#
+if [ "$IS_SELF_SIGNED" = 0 ]; then
+    #
+    # Create CSR
+    #
+    CSR_PATH=$(tedge config get device.csr_path)
+    certtool --generate-request --template "$CSR_TEMPLATE" --load-privkey "$KEY" --outfile "$CSR_PATH"
+    echo "Created csr: $CSR_PATH" >&2
+    # tedge cert renew c8y --csr-path "$CSR_PATH"
+else
+    # Optional: Self sign the Certificate
+    echo "Creating self-signed certificate" >&2
+    CERT_PATH=$(tedge config get device.cert_path)
+    certtool --generate-self-signed --template "$CSR_TEMPLATE" --load-privkey "$KEY" --outfile "$CERT_PATH"
+fi
 
 #
 # Print info

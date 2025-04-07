@@ -1,5 +1,5 @@
-p11-kit
 gnutls-utils
 opensc
 opensc-bash-completion
 softhsm
+tedge-p11-server

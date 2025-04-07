@@ -1,5 +1,5 @@
-p11-kit
 gnutls-bin
 opensc
 opensc-pkcs11
 softhsm2
+tedge-p11-server

@@ -1,10 +1,47 @@
 #!/bin/sh
 set -e
 
+DEVICE_ID="${DEVICE_ID:-}"
 export GNUTLS_PIN="${GNUTLS_PIN:-123456}"
 export GNUTLS_SO_PIN="${GNUTLS_SO_PIN:-123456}"
 export TOKEN_LABEL="${TOKEN_LABEL:-tedge}"
 PKCS_URI=
+IS_SELF_SIGNED=0
+
+#
+# Parse arguments
+#
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --self-signed)
+            IS_SELF_SIGNED=1
+            ;;
+        --pin)
+            GNUTLS_PIN="$2"
+            shift
+            ;;
+        --so-pin)
+            GNUTLS_SO_PIN="$2"
+            shift
+            ;;
+        --device-id)
+            DEVICE_ID="$2"
+            shift
+            ;;
+    esac
+    shift
+done
+
+#
+# Enable usage with thin-edge.io
+#
+tedge config set device.cryptoki.mode socket
+if ! grep -q '^TEDGE_DEVICE_CRYPTOKI_MODULE_PATH=.\+' /etc/tedge/plugins/tedge-p11-server.conf; then
+    cat <<EOT > /etc/tedge/plugins/tedge-p11-server.conf
+TEDGE_DEVICE_CRYPTOKI_MODULE_PATH=/usr/lib/softhsm/libsofthsm2.so
+TEDGE_DEVICE_CRYPTOKI_PIN=$GNUTLS_PIN
+EOT
+fi
 
 get_token() {
     p11tool --list-tokens | grep "token=$TOKEN_LABEL" | awk '{ print $2 }' | head -n1
@@ -18,7 +55,7 @@ get_key() {
 # Get/Init slot
 #
 PKCS_URI=$(get_token)
-if [ -z "$(get_token)" ]; then
+if [ -z "$PKCS_URI" ]; then
     echo "Initializing softhsm2 token" >&2
     softhsm2-util --init-token --free --label "$TOKEN_LABEL" --pin "$GNUTLS_PIN" --so-pin "$GNUTLS_SO_PIN"
     PKCS_URI=$(get_token)
@@ -42,19 +79,43 @@ fi
 #
 CSR_TEMPLATE=/etc/tedge/hsm/cert.template
 if [ ! -f "$CSR_TEMPLATE" ]; then
-    DEVICE_ID=$(tedge-identity 2>/dev/null)
+    if [ -z "${DEVICE_ID:-}" ]; then
+        DEVICE_ID=$(tedge-identity 2>/dev/null)
+    fi
+
+    # If it is self-signed, then Cumulocity requires the ca property
+    # to be added, otherwise certificate will be rejected by Cumulocity
+    # when trying to upload it
+    IS_CA=""
+    if [ "$IS_SELF_SIGNED" ]; then
+        IS_CA="ca"
+    fi
+
     cat <<EOT > "$CSR_TEMPLATE"
 organization = "Thin Edge"
 unit = "Test Device"
 #state = "QLD"
 #country = AU
 cn = "$DEVICE_ID"
+expiration_days = 365
+$IS_CA
 EOT
 fi
 
 #
-# Create CSR
+# Create CSR (to be signed externally) or create a self-signed certificate
 #
-CSR_PATH=$(tedge config get device.csr_path)
-certtool --generate-request --template "$CSR_TEMPLATE" --load-privkey "$KEY" --outfile "$CSR_PATH"
-echo "Created csr: $CSR_PATH" >&2
+if [ "$IS_SELF_SIGNED" = 0 ]; then
+    #
+    # Create CSR
+    #
+    CSR_PATH=$(tedge config get device.csr_path)
+    certtool --generate-request --template "$CSR_TEMPLATE" --load-privkey "$KEY" --outfile "$CSR_PATH"
+    echo "Created csr: $CSR_PATH" >&2
+    # tedge cert renew c8y --csr-path "$CSR_PATH"
+else
+    # Optional: Self sign the Certificate
+    echo "Creating self-signed certificate" >&2
+    CERT_PATH=$(tedge config get device.cert_path)
+    certtool --generate-self-signed --template "$CSR_TEMPLATE" --load-privkey "$KEY" --outfile "$CERT_PATH"
+fi

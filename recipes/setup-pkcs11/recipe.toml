@@ -3,4 +3,5 @@ description = "Setup PKCS#11 (cryptoki) tools"
 dependencies = [
     "core/pkg-update",
     "thin-edge.io",
+    "tedge-community-repo",
 ]
