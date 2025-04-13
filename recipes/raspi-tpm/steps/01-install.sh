@@ -14,4 +14,3 @@ usermod -a -G tss tedge
 
 # Add helper scripts
 install -m 0755 -d /usr/share/tedge-hsm/bin
-install -D -m 0755 "${RECIPE_DIR}/files/init-tpm.sh" -t /usr/share/tedge-hsm/bin/
