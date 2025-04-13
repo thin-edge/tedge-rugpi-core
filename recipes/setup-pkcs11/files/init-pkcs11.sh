@@ -14,7 +14,7 @@ export TEDGE_CONFIG_DIR="${TEDGE_CONFIG_DIR:-/etc/tedge}"
 export TPM2_PKCS11_STORE="${TPM2_PKCS11_STORE:-/etc/tedge/hsm}"
 
 PKCS11_MODULE="${PKCS11_MODULE:-}"
-PKCS_URI="${PKCS_URI:-}"
+PKCS11_URI="${PKCS11_URI:-}"
 IS_SELF_SIGNED=0
 
 ACTION=
@@ -34,6 +34,7 @@ ARGUMENTS
   --create                  Request a device certificate using the Cumulocity CA
   --renew                   Renew the device certificate using the Cumulocity CA
   --type <string>           Type of HSM (using the PKCS#11 interface) to use. Available values: [softhsm2, yubikey, nitrokey, tpm2]
+  --pkcs11-uri <uri>        PKCS#11 URI/URL pointing to the slot to be used for the private key, e.g. output of 'p11tool --list-tokens'
   --self-signed             Generate a self-signed certificate
   --pin <string>            Pin used to access the HSM
   --so-pin <string>         Special pin
@@ -47,6 +48,9 @@ EXAMPLES
 
 $0 --type softhsm2 --create --c8y-url example.c8y.io
 # Initialize private key using softhsm2, and use the Cumulocity CA to request a certificate
+
+$0 --create --type nitrokey --c8y-url example.c8y.io --pkcs11-uri 'pkcs11:model=PKCS%2315%20emulated;manufacturer=www.CardContact.de;serial=DENK0400089;token=SmartCard-HSM%20%28UserPIN%29'
+# Initialize private key using nitrokey, where you have to specify the slot where the nitrokey is accessible from
 
 $0 --type softhsm2 --renew
 # Renew the device certificate (using the Cumulocity CA) with the private key stored using softhsm2
@@ -67,6 +71,16 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --self-signed)
             IS_SELF_SIGNED=1
+            ;;
+        --label)
+            TOKEN_LABEL="$2"
+            shift
+            ;;
+        --pkcs11-uri)
+            if [ -n "$2" ]; then
+                PKCS11_URI="$2"
+            fi
+            shift
             ;;
         --pin)
             GNUTLS_PIN="$2"
@@ -120,14 +134,30 @@ fi
 
 # Set module defaults
 case "$HSM_TYPE" in
-    softhsm2)
+    yubikey|yk|ykman)
+        if [ -z "$PKCS11_MODULE" ]; then
+            PKCS11_MODULE=$(find /usr/lib -name libykcs11.so | head -n1)
+        fi
+        ;;
+    softhsm2|softhsm)
         if [ -z "$PKCS11_MODULE" ]; then
             PKCS11_MODULE=$(find /usr/lib -name libsofthsm2.so | head -n1)
+        fi
+        ;;
+    nitrokey)
+        if [ -z "$PKCS11_MODULE" ]; then
+            PKCS11_MODULE=$(find /usr/lib -name opensc-pkcs11.so | head -n1)
         fi
         ;;
     tpm2)
         if [ -z "$PKCS11_MODULE" ]; then
             PKCS11_MODULE=$(find /usr/lib -name libtpm2_pkcs11.so | head -n1)
+        fi
+        ;;
+    *)
+        # Default to using opensc
+        if [ -z "$PKCS11_MODULE" ]; then
+            PKCS11_MODULE=$(find /usr/lib -name opensc-pkcs11.so | head -n1)
         fi
         ;;
 esac
@@ -162,7 +192,7 @@ get_token() {
 }
 
 get_key() {
-    p11tool --login --list-all "$PKCS_URI" 2>/dev/null | grep type=private | awk '{ print $2 }' | head -n1
+    p11tool --login --list-all "$PKCS11_URI" 2>/dev/null | grep type=private | awk '{ print $2 }' | head -n1
 }
 
 init_private_key() {
@@ -171,15 +201,15 @@ init_private_key() {
             ykman piv keys generate --algorithm ECCP256 9a "$PUBLIC_KEY"
             ;;
         nitrokey)
-            p11tool --initialize-pin "$PKCS_URI"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS_URI"
+            p11tool --initialize-pin "$PKCS11_URI"
+            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS11_URI"
             ;;
         tpm2)
             mkdir -p "$TPM2_PKCS11_STORE"
             chown -R tedge:tedge "$TPM2_PKCS11_STORE"
 
-            p11tool --initialize-pin "$PKCS_URI"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS_URI"
+            p11tool --initialize-pin "$PKCS11_URI"
+            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS11_URI"
             ;;
         softhsm2|softhsm)
             softhsm2-util --init-token --free --label "$TOKEN_LABEL" --pin "$GNUTLS_PIN" --so-pin "$GNUTLS_SO_PIN"
@@ -190,8 +220,8 @@ init_private_key() {
             ;;
         *)
             echo "Warning: Unknown HSM type (name=$1). Trying to initialize using standard p11tool commands" >&2
-            p11tool --initialize-pin "$PKCS_URI"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS_URI"
+            p11tool --initialize-pin "$PKCS11_URI"
+            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS11_URI"
             ;;
     esac
 }
@@ -220,14 +250,14 @@ BEGIN{
 #
 # Get/Init slot
 #
-if [ -z "$PKCS_URI" ]; then
-    PKCS_URI=$(get_token)
+if [ -z "$PKCS11_URI" ]; then
+    PKCS11_URI=$(get_token)
 fi
-if [ -z "$PKCS_URI" ]; then
+if [ -z "$PKCS11_URI" ]; then
     init_private_key "$HSM_TYPE"
-    PKCS_URI=$(get_token)
+    PKCS11_URI=$(get_token)
 fi
-echo "Using token URI: $PKCS_URI" >&2
+echo "Using token URI: $PKCS11_URI" >&2
 
 
 #
@@ -236,7 +266,7 @@ echo "Using token URI: $PKCS_URI" >&2
 KEY=$(get_key)
 if [ -z "$KEY" ]; then
     # NOTE: this make fail for some devices which don't fully comply with the pkcs11 interface
-    p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "tedge" --outfile "$TEDGE_CONFIG_DIR/device-certs/tedge.pub" "$PKCS_URI"
+    p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "tedge" --outfile "$TEDGE_CONFIG_DIR/device-certs/tedge.pub" "$PKCS11_URI"
     KEY=$(get_key)
 fi
 
