@@ -4,6 +4,7 @@ set -e
 DEVICE_ID="${DEVICE_ID:-}"
 C8Y_URL="${C8Y_URL:-}"
 DEVICE_ONE_TIME_PASSWORD="${DEVICE_ONE_TIME_PASSWORD:-}"
+TOKEN_URL="${TOKEN_URL:-}"
 
 export GNUTLS_PIN="${GNUTLS_PIN:-123456}"
 export GNUTLS_SO_PIN="${GNUTLS_SO_PIN:-123456}"
@@ -14,7 +15,7 @@ export TEDGE_CONFIG_DIR="${TEDGE_CONFIG_DIR:-/etc/tedge}"
 export TPM2_PKCS11_STORE="${TPM2_PKCS11_STORE:-/etc/tedge/hsm}"
 
 PKCS11_MODULE="${PKCS11_MODULE:-}"
-PKCS11_URI="${PKCS11_URI:-}"
+KEY="${KEY:-}"
 IS_SELF_SIGNED=0
 
 ACTION=
@@ -34,11 +35,12 @@ ARGUMENTS
   --create                  Request a device certificate using the Cumulocity CA
   --renew                   Renew the device certificate using the Cumulocity CA
   --type <string>           Type of HSM (using the PKCS#11 interface) to use. Available values: [softhsm2, yubikey, nitrokey, tpm2]
-  --pkcs11-uri <uri>        PKCS#11 URI/URL pointing to the slot to be used for the private key, e.g. output of 'p11tool --list-tokens'
+  --token-url <url>         Token PKCS#11 URL which is to be used for initialization.
+  --key <url>               Key's PKCS#11 URL. If left blank then it will be auto detected
   --self-signed             Generate a self-signed certificate
   --pin <string>            Pin used to access the HSM
   --so-pin <string>         Special pin
-  --device-id <string>      Device ID to use during initialization
+  --device-id <string>      Device ID to use during initialization. Defaults to first non-zero value from: DEVICE_ID env, tedge-identity, hostname
   --module <path>           Path to the PKCS#11 module to use
   -p, --one-time-password <string>      one-time-password use to request the certificate from the Cumulocity CA
   --debug                   Enable debugging
@@ -46,20 +48,31 @@ ARGUMENTS
 
 EXAMPLES
 
+## Initialization
+
+### Nitrokey
+
+$0 --create --type nitrokey --c8y-url example.c8y.io --token-url 'pkcs11:model=PKCS%2315%20emulated;manufacturer=www.CardContact.de;serial=DENK0400089;token=SmartCard-HSM%20%28UserPIN%29'
+# Initialize private key using nitrokey, where you have to specify the slot where the nitrokey is accessible from
+
+
+### SoftHSM2
+
 $0 --type softhsm2 --create --c8y-url example.c8y.io
 # Initialize private key using softhsm2, and use the Cumulocity CA to request a certificate
 
-$0 --create --type nitrokey --c8y-url example.c8y.io --pkcs11-uri 'pkcs11:model=PKCS%2315%20emulated;manufacturer=www.CardContact.de;serial=DENK0400089;token=SmartCard-HSM%20%28UserPIN%29'
-# Initialize private key using nitrokey, where you have to specify the slot where the nitrokey is accessible from
 
-$0 --type softhsm2 --renew
-# Renew the device certificate (using the Cumulocity CA) with the private key stored using softhsm2
+### TPM2
 
-$0 --type tpm2 --create
+sudo -u tedge $0 --type tpm2 --create --c8y-url example.c8y.io --token-url 'pkcs11:model=SLB9672%00%00%00%00%00%00%00%00%00;manufacturer=Infineon;serial=0000000000000000;token='
 # Initialize private key using a tpm 2.0 module, and use the Cumulocity CA to request a certificate
 
-$0 --type tpm2 --renew
-# Renew the device certificate (using the Cumulocity CA) with the private key stored using tpm 2.0
+
+## Renewal
+
+### All
+
+$0 --renew
 
 EOT
 }
@@ -76,9 +89,13 @@ while [ $# -gt 0 ]; do
             TOKEN_LABEL="$2"
             shift
             ;;
-        --pkcs11-uri)
+        --token-url)
+            TOKEN_URL="$2"
+            shift
+            ;;
+        --key)
             if [ -n "$2" ]; then
-                PKCS11_URI="$2"
+                KEY="$2"
             fi
             shift
             ;;
@@ -134,12 +151,12 @@ fi
 
 # Set module defaults
 case "$HSM_TYPE" in
-    yubikey|yk|ykman)
+    yubikey)
         if [ -z "$PKCS11_MODULE" ]; then
             PKCS11_MODULE=$(find /usr/lib -name libykcs11.so | head -n1)
         fi
         ;;
-    softhsm2|softhsm)
+    softhsm2)
         if [ -z "$PKCS11_MODULE" ]; then
             PKCS11_MODULE=$(find /usr/lib -name libsofthsm2.so | head -n1)
         fi
@@ -192,26 +209,34 @@ get_token() {
 }
 
 get_key() {
-    p11tool --login --list-all "$PKCS11_URI" 2>/dev/null | grep type=private | awk '{ print $2 }' | head -n1
+    p11tool --login --list-all "$TOKEN_URL" 2>/dev/null | grep type=private | awk '{ print $2 }' | head -n1
 }
 
 init_private_key() {
     case "$1" in
-        yubikey|yk|ykman)
+        yubikey)
             ykman piv keys generate --algorithm ECCP256 9a "$PUBLIC_KEY"
             ;;
         nitrokey)
-            p11tool --initialize-pin "$PKCS11_URI"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS11_URI"
+            p11tool --initialize-pin "$TOKEN_URL"
+            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
             ;;
         tpm2)
+            # TODO: Should the store be removed if the user wants to re-initialize it?
+            # rm -rf "$TPM2_PKCS11_STORE"
+
             mkdir -p "$TPM2_PKCS11_STORE"
             chown -R tedge:tedge "$TPM2_PKCS11_STORE"
 
-            p11tool --initialize-pin "$PKCS11_URI"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS11_URI"
+            p11tool --initialize --label "$TOKEN_LABEL" --set-so-pin "$GNUTLS_SO_PIN" "$TOKEN_URL"
+
+            # refresh as there should be a new token created
+            TOKEN_URL=$(p11tool --list-token-urls | grep "token=$TOKEN_LABEL" | head -n 1)
+
+            p11tool --initialize-pin "$TOKEN_URL"
+            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
             ;;
-        softhsm2|softhsm)
+        softhsm2)
             softhsm2-util --init-token --free --label "$TOKEN_LABEL" --pin "$GNUTLS_PIN" --so-pin "$GNUTLS_SO_PIN"
 
             # TODO: How to limit changing ownership to the token which was created, as each
@@ -220,8 +245,8 @@ init_private_key() {
             ;;
         *)
             echo "Warning: Unknown HSM type (name=$1). Trying to initialize using standard p11tool commands" >&2
-            p11tool --initialize-pin "$PKCS11_URI"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$PKCS11_URI"
+            p11tool --initialize-pin "$TOKEN_URL"
+            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
             ;;
     esac
 }
@@ -250,23 +275,27 @@ BEGIN{
 #
 # Get/Init slot
 #
-if [ -z "$PKCS11_URI" ]; then
-    PKCS11_URI=$(get_token)
+if [ -z "$TOKEN_URL" ]; then
+    # Select first URL
+    TOKEN_URL=$(p11tool --list-token-urls | head -n 1)
 fi
-if [ -z "$PKCS11_URI" ]; then
-    init_private_key "$HSM_TYPE"
-    PKCS11_URI=$(get_token)
-fi
-echo "Using token URI: $PKCS11_URI" >&2
 
-
-#
-# Get/Create key
-#
-KEY=$(get_key)
+# check if a key can be found or not (to auto detect whether an initialization is needed)
 if [ -z "$KEY" ]; then
-    # NOTE: this make fail for some devices which don't fully comply with the pkcs11 interface
-    p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "tedge" --outfile "$TEDGE_CONFIG_DIR/device-certs/tedge.pub" "$PKCS11_URI"
+    KEY=$(get_key)
+fi
+
+# Create the key if required
+if [ -z "$KEY" ]; then
+    init_private_key "$HSM_TYPE"
+    TOKEN_URL=$(get_token)
+fi
+echo "Using Token URL: $TOKEN_URL" >&2
+
+#
+# Get key
+#
+if [ -z "$KEY" ]; then
     KEY=$(get_key)
 fi
 
@@ -310,14 +339,14 @@ fi
 
 if [ ! -f "$PUBLIC_KEY" ]; then
     case "$HSM_TYPE" in
-        yubikey|yk|ykman)
+        yubikey)
             ykman piv keys export 9a "$PUBLIC_KEY"
             ;;
         nitrokey)
             ;;
         tpm2)
             ;;
-        softhsm2|softhsm)
+        softhsm2)
             ;;
         *)
             echo "Warning: Unknown HSM type (name=$HSM_TYPE). You need to init this on your own" >&2
@@ -358,18 +387,29 @@ else
         --load-pubkey "$PUBLIC_KEY" \
         --no-text \
         --outfile "$CERT_PATH"
-    # Remove once https://github.com/thin-edge/thin-edge.io/pull/3556 is merged
-    "$GSED" -i 's/NEW CERTIFICATE REQUEST/CERTIFICATE REQUEST/g' "$CSR_PATH"
     chmod 444 "$CERT_PATH" ||:
 fi
 
 case "$ACTION" in
     renew)
-        tedge cert renew c8y --csr-path "$CSR_PATH"
-        tedge reconnect c8y
+        sudo tedge cert renew c8y --csr-path "$CSR_PATH"
+        sudo tedge reconnect c8y
         echo "Renewed certificate successfully" >&2
         ;;
     create)
+        # TODO: when running as the tedge user, it does not have permissions to stop the service
+        # Stop any existing tedge-p11-server instance so it can reload the new key (used later on)
+        # if command -V systemctl >/dev/null 2>&1; then
+        #     sudo systemctl stop tedge-p11-server.service ||:
+        # fi
+
+        if [ "$IS_SELF_SIGNED" = 1 ]; then
+            echo "Uploading self-signed certificate" >&2
+            sudo tedge cert upload c8y
+            sudo tedge reconnect c8y
+            exit 0
+        fi
+
         if [ -z "$DEVICE_ONE_TIME_PASSWORD" ]; then
             # Generate a code
             DEVICE_ONE_TIME_PASSWORD=$(get_random_code)
@@ -382,15 +422,11 @@ case "$ACTION" in
             echo "" >&2
         fi
 
-        tedge cert download c8y --device-id "$DEVICE_ID" --csr-path "$CSR_PATH" --token "$DEVICE_ONE_TIME_PASSWORD" --retry-every 5s
-        tedge reconnect c8y
+        sudo tedge cert download c8y --device-id "$DEVICE_ID" --csr-path "$CSR_PATH" --token "$DEVICE_ONE_TIME_PASSWORD" --retry-every 5s
+        sudo tedge reconnect c8y
         echo "Downloaded certificate successfully" >&2
         ;;
     *)
-        # Don't do any other action, just show information to the user
-        echo "" >&2
-        echo "Download Cumulocity Certificate" >&2
-        echo >&2
-        echo "  tedge cert download c8y --device-id '$DEVICE_ID' --csr-path '$CSR_PATH'" >&2
+        echo "No action given by the user" >&2
         ;;
 esac
