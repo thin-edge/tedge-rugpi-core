@@ -89,8 +89,10 @@ systemctl enable NetworkManager || true
 # * https://github.com/RPi-Distro/pi-gen/blob/master/stage2/02-net-tweaks/01-run.sh#L28
 if [ -d /var/lib/systemd/rfkill ]; then
     echo "Enabling wifi on 5GHz enabled devices by default" >&2
-    echo 0 > "/var/lib/systemd/rfkill/platform-3f300000.mmcnr:wlan"
-    echo 0 > "/var/lib/systemd/rfkill/platform-fe300000.mmcnr:wlan"
+    for filename in /var/lib/systemd/rfkill/*:wlan; do
+        echo 0 > "$filename"
+    done
+    nmcli radio wifi on 2>/dev/null ||:
 fi
 
 # Enable services by default to have sensible default settings once tedge is configured
