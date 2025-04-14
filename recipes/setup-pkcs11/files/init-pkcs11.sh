@@ -361,31 +361,25 @@ if [ "$IS_SELF_SIGNED" = 0 ]; then
     CSR_PATH=$(tedge config get device.csr_path)
     [ -f "$CSR_PATH" ] && chmod 644 "$CSR_PATH"
     
-    # Remove --no-text once https://github.com/thin-edge/thin-edge.io/pull/3556 is merged
     "$CERT_TOOL" \
         --generate-request \
         --template "$CSR_TEMPLATE" \
         --load-privkey "$KEY" \
         --load-pubkey "$PUBLIC_KEY" \
-        --no-text \
         --outfile "$CSR_PATH"
 
-    # Remove once https://github.com/thin-edge/thin-edge.io/pull/3556 is merged
     echo "Created csr: $CSR_PATH" >&2
-    "$GSED" -i 's/NEW CERTIFICATE REQUEST/CERTIFICATE REQUEST/g' "$CSR_PATH"
 else
     # Optional: Self sign the Certificate
     echo "Creating self-signed certificate" >&2
     CERT_PATH=$(tedge config get device.cert_path)
     [ -f "$CERT_PATH" ] && chmod 644 "$CERT_PATH"
 
-    # Remove --no-text once https://github.com/thin-edge/thin-edge.io/pull/3556 is merged
     "$CERT_TOOL" \
         --generate-self-signed \
         --template "$CSR_TEMPLATE" \
         --load-privkey "$KEY" \
         --load-pubkey "$PUBLIC_KEY" \
-        --no-text \
         --outfile "$CERT_PATH"
     chmod 444 "$CERT_PATH" ||:
 fi
