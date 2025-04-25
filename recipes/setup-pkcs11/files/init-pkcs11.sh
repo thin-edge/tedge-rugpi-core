@@ -191,11 +191,11 @@ fi
 tedge config set mqtt.bridge.built_in true
 tedge config set device.cryptoki.mode socket
 if [ -f "$PKCS11_MODULE" ]; then
-    if ! grep -q '^TEDGE_DEVICE_CRYPTOKI_MODULE_PATH=.\+' "$TEDGE_CONFIG_DIR/plugins/tedge-p11-server.conf"; then
-        cat <<EOT > "$TEDGE_CONFIG_DIR/plugins/tedge-p11-server.conf"
-TEDGE_DEVICE_CRYPTOKI_MODULE_PATH=$PKCS11_MODULE
-TEDGE_DEVICE_CRYPTOKI_PIN=$GNUTLS_PIN
+    tedge config set device.cryptoki.module_path "$PKCS11_MODULE"
+    tedge config set device.cryptoki.pin "$GNUTLS_PIN"
 
+    if ! grep -q '^TPM2_PKCS11_STORE=.\+' "$TEDGE_CONFIG_DIR/plugins/tedge-p11-server.conf"; then
+        cat <<EOT > "$TEDGE_CONFIG_DIR/plugins/tedge-p11-server.conf"
 # TPM specific settings
 TPM2_PKCS11_STORE="$TPM2_PKCS11_STORE"
 EOT
@@ -416,7 +416,7 @@ case "$ACTION" in
             echo "" >&2
         fi
 
-        sudo tedge cert download c8y --device-id "$DEVICE_ID" --csr-path "$CSR_PATH" --token "$DEVICE_ONE_TIME_PASSWORD" --retry-every 5s
+        sudo tedge cert download c8y --device-id "$DEVICE_ID" --csr-path "$CSR_PATH" --one-time-password "$DEVICE_ONE_TIME_PASSWORD" --retry-every 5s
         sudo tedge reconnect c8y
         echo "Downloaded certificate successfully" >&2
         ;;
