@@ -9,9 +9,6 @@ RUGIX_DEV=${RUGIX_DEV:-"false"}
 
 RUGIX_CONTEXT_DIR=${RUGIX_CONTEXT_DIR:-""}
 
-# TODO: Switch to next official release , > v0.8.5
-RUGIX_VERSION="git-409b2b0"
-
 RUGIX_CACHE_VOLUME=${RUGIX_CACHE_VOLUME:-"rugix-build-cache"}
 
 if [ "${RUGIX_DEV}" = "false" ]; then
