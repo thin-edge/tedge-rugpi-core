@@ -18,6 +18,10 @@ fi
 # Use symlink so that the workflow file can be updated within the image
 ln -s /usr/share/tedge-workflows/firmware_update.rugix.toml /etc/tedge/operations/firmware_update.toml
 
+# Support upgrading from older versions where it still has a persisted symlink
+# from /etc/tedge/operations/firmware_update.toml to firmware_update.rugpi.toml
+ln -s /usr/share/tedge-workflows/firmware_update.rugix.toml /usr/share/tedge-workflows/firmware_update.rugpi.toml
+
 # Add system-hooks
 # https://oss.silitics.com/rugix/docs/ctrl/hooks#system-update-hooks
 install -m 0755 -d /etc/rugix/hooks/system-commit/pre-commit
