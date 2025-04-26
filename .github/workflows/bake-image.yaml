@@ -134,25 +134,39 @@ jobs:
           C8Y_USER: '${{ secrets.C8Y_USER }}'
           C8Y_PASSWORD: '${{ secrets.C8Y_PASSWORD }}'
         run: |
-          FIRMWARE_ID=$(
-            c8y firmware get -n --id "${{ matrix.job.system }}" --silentStatusCodes 404 --select id -o csv ||
-              c8y firmware create -n --name "${{ matrix.job.system }}" --select id -o csv
-          )
-          ARTIFACT_ID=$(echo "${{ steps.bundle-upload-step.outputs.artifact-url }}" | rev | cut -d/ -f1 | rev)
-          c8y firmware versions create \
-            -n \
-            --firmware "$FIRMWARE_ID" \
-            --version "${{ env.VERSION }}" \
-            --url "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip" \
-            --template "{
-              github: {
-                ref: '${{ github.ref }}',
-                repository: '${{ github.repository }}',
-                run_id: '${{ github.run_id }}',
-                sha: '${{ github.sha }}',
-                artifactUrl: '${{ steps.bundle-upload-step.outputs.artifact-url }}',
-              }
-            }"
+          publish_firmware_version() {
+            FIRMWARE_NAME="$1"
+            FIRMWARE_VERSION="$2"
+            ARTIFACT_URL="$3"
+
+            FIRMWARE_ID=$(
+              c8y firmware get -n --id "$FIRMWARE_NAME" --silentStatusCodes 404 --select id -o csv ||
+                c8y firmware create -n --name "$FIRMWARE_NAME" --select id -o csv
+            )
+            ARTIFACT_ID=$(echo "$ARTIFACT_URL" | rev | cut -d/ -f1 | rev)
+            FIRMWARE_URL="https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip"
+            c8y firmware versions create \
+              -n \
+              --firmware "$FIRMWARE_ID" \
+              --version "$FIRMWARE_VERSION" \
+              --url "$FIRMWARE_URL" \
+              --template "{
+                github: {
+                  ref: '${{ github.ref }}',
+                  repository: '${{ github.repository }}',
+                  run_id: '${{ github.run_id }}',
+                  sha: '${{ github.sha }}',
+                  artifactUrl: '$ARTIFACT_URL',
+                }
+              }"
+          }
+
+          # bundle
+          publish_firmware_version "${{ matrix.job.system }}" "${{ env.VERSION }}" "${{ steps.bundle-upload-step.outputs.artifact-url }}"
+
+          # image (only used for migrating from a rugpi image to rugix)
+          publish_firmware_version "${{ matrix.job.system }}" "${{ env.VERSION }}-img" "${{ steps.image-upload-step.outputs.artifact-url }}"
+
 
   release:
     name: Release
