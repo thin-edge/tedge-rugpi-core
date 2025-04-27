@@ -92,6 +92,7 @@ if [ -d /var/lib/systemd/rfkill ]; then
     for filename in /var/lib/systemd/rfkill/*:wlan; do
         echo 0 > "$filename"
     done
+    rfkill unblock all ||:
     nmcli radio wifi on 2>/dev/null ||:
 fi
 
