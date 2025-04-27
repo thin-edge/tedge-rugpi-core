@@ -16,7 +16,7 @@ echo "File: $CMDLINE_FILE (before)" >&2
 echo "$CMDLINE_CONTENTS"
 
 # remove duplicates, use xargs to trim leading and trailing spaces
-OPTIONS="cgroup_memory cgroup_enable enable_uart rfkill.default_state"
+OPTIONS="cgroup_memory cgroup_enable enable_uart"
 for OPTION in $OPTIONS; do
     CMDLINE_CONTENTS=$(echo "$CMDLINE_CONTENTS" | sed 's/'"$OPTION"'=[a-z0-9A-Z,]*//g' | xargs)
 done
@@ -37,9 +37,6 @@ if [ -n "${RECIPE_PARAM_ENABLE_UART:-}" ]; then
             ;;
     esac
 fi
-
-# control rfkill default state
-CMDLINE_CONTENTS=$(printf "%s %s" "$CMDLINE_CONTENTS" "rfkill.default_state=1")
 
 printf '%s' "$CMDLINE_CONTENTS" > "$CMDLINE_FILE"
 
