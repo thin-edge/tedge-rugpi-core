@@ -3,5 +3,5 @@ description = "install latest mosquitto version"
 priority = 200_000  # Execute before thin-edge.io
 
 [parameters]
-mosquitto_user_id = { default = "961" }
-mosquitto_group_id = { default = "960" }
+mosquitto_user_id = { default = "106" }
+mosquitto_group_id = { default = "111" }
