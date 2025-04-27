@@ -21,6 +21,9 @@ ln -s /usr/share/tedge-workflows/firmware_update.rugix.toml /etc/tedge/operation
 # Support upgrading from older versions where it still has a persisted symlink
 # from /etc/tedge/operations/firmware_update.toml to firmware_update.rugpi.toml
 ln -s /usr/share/tedge-workflows/firmware_update.rugix.toml /usr/share/tedge-workflows/firmware_update.rugpi.toml
+# Note: system.toml will still have a symlink to the older rugpi file, and the system.toml
+# is persisted across updates
+ln -s /usr/bin/rugix_workflow.sh /usr/bin/rugpi_workflow.sh
 
 # Add system-hooks
 # https://oss.silitics.com/rugix/docs/ctrl/hooks#system-update-hooks
