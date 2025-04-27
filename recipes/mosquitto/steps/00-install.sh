@@ -6,8 +6,8 @@
 ENABLE_BACKPORTS=0
 
 # Used fixed uid/gid to avoid permission issues across A/B updates
-groupadd --system --gid 960 mosquitto || groupmod -g 960 mosquitto
-useradd --system --no-create-home --shell "/bin/false" --uid 961 --gid 960 mosquitto || usermod -u 961 mosquitto
+groupadd --system --gid "$RECIPE_PARAM_MOSQUITTO_GROUP_ID" mosquitto || groupmod -g "$RECIPE_PARAM_MOSQUITTO_GROUP_ID" mosquitto
+useradd --system --no-create-home --shell "/bin/false" --uid "$RECIPE_PARAM_MOSQUITTO_USER_ID" --gid "$RECIPE_PARAM_MOSQUITTO_GROUP_ID" mosquitto || usermod -u "$RECIPE_PARAM_MOSQUITTO_USER_ID" mosquitto
 
 DPKG_ARCH=$(dpkg --print-architecture)
 

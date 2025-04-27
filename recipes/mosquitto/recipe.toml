@@ -1,3 +1,7 @@
 #:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
 description = "install latest mosquitto version"
 priority = 200_000  # Execute before thin-edge.io
+
+[parameters]
+mosquitto_user_id = { default = "961" }
+mosquitto_group_id = { default = "960" }
