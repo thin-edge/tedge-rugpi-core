@@ -38,7 +38,7 @@ target = "rpi-tryboot"
 # - Raspberry Pi Zero 2w
 # - Raspberry Pi 2
 [systems.tedge-raspios-arm64]
-layer = "tedge-raspios-uboot"
+layer = "tedge-raspios"
 architecture = "arm64"
 target = "rpi-uboot"
 
@@ -46,6 +46,6 @@ target = "rpi-uboot"
 # - Raspberry Pi 1
 # - Raspberry Pi Zero
 [systems.tedge-raspios-armhf]
-layer = "tedge-raspios-uboot"
+layer = "tedge-raspios"
 architecture = "armhf"
 target = "rpi-uboot"

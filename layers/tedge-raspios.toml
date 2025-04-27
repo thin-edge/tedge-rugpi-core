@@ -7,6 +7,12 @@ recipes = [
     "raspi-tpm",
     "setup-pkcs11",
 
+    # Include u-boot setup on all image
+    # to avoid having to create a layer per-bootloader
+    # and it does not cause any negative effects
+    # including it for tryboot
+    "core/rpi-uboot-setup",
+
     # SBOM
     "rugix-extra/simple-sbom",
 ]
