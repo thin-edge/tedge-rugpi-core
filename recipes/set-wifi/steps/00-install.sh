@@ -9,6 +9,12 @@ if [ -f "$RUGIX_PROJECT_DIR/.env" ]; then
     . "$RUGIX_PROJECT_DIR/.env"
 fi
 
+# Set country code otherwise the wifi can be disabled by default
+RECIPE_PARAM_COUNTRY_CODE=${RECIPE_PARAM_COUNTRY_CODE:-$SECRETS_WIFI_COUNTRY_CODE}
+if command -V raspi-config >/dev/null 2>&1; then
+    raspi-config nonint do_wifi_country "${RECIPE_PARAM_COUNTRY_CODE:-DE}"
+fi
+
 # Use secret values if the user has not give default values in the [parameters]
 RECIPE_PARAM_ID=${RECIPE_PARAM_ID:-$SECRETS_WIFI_ID}
 RECIPE_PARAM_SSID=${RECIPE_PARAM_SSID:-$SECRETS_WIFI_SSID}

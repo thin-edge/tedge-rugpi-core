@@ -5,3 +5,4 @@ description = "Set wifi access"
 id = { default = "wifi" }
 ssid = { default = "" }
 password = { default = "" }
+country_code = { default = "DE" }
