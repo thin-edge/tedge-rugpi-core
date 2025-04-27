@@ -4,3 +4,7 @@ dependencies = [
     "thin-edge.io",
     "tedge-community-repo",
 ]
+
+[parameters]
+tss_user_id = { default = "112" }
+tss_group_id = { default = "112" }

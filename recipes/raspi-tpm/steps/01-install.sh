@@ -13,10 +13,8 @@ EOT
 usermod -a -G tss tedge
 
 # Used fixed uid/gid to avoid permission issues across A/B updates
-TSS_USER_ID=112
-TSS_GROUP_ID=112
-groupmod -g "$TSS_GROUP_ID" tss
-usermod -u "$TSS_USER_ID" tss
+groupmod -g "$RECIPE_PARAM_TSS_GROUP_ID" tss
+usermod -u "$RECIPE_PARAM_TSS_USER_ID" tss
 
 # Add helper scripts
 install -m 0755 -d /usr/share/tedge-hsm/bin
