@@ -87,7 +87,8 @@ systemctl enable NetworkManager || true
 # For background checkout the following links
 # * https://github.com/RPi-Distro/pi-gen/issues/414
 # * https://github.com/RPi-Distro/pi-gen/blob/master/stage2/02-net-tweaks/01-run.sh#L28
-if [ -d /var/lib/systemd/rfkill ]; then
+REMOVE_RFKILL=0
+if [ "$REMOVE_RFKILL" = 1 ] && [ -d /var/lib/systemd/rfkill ]; then
     echo "Enabling wifi on 5GHz enabled devices by default" >&2
     for filename in /var/lib/systemd/rfkill/*:wlan; do
         echo 0 > "$filename"
