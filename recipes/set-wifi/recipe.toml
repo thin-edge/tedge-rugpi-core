@@ -6,3 +6,4 @@ id = { default = "wifi" }
 ssid = { default = "" }
 password = { default = "" }
 country_code = { default = "DE" }
+disable_rfkill = { default = "true" }

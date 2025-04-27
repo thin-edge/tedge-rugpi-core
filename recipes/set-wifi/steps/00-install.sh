@@ -9,6 +9,21 @@ if [ -f "$RUGIX_PROJECT_DIR/.env" ]; then
     . "$RUGIX_PROJECT_DIR/.env"
 fi
 
+# Remove software kill switches which would otherwise prevent the wifi from being enabled by default on rpi 3 and 4's
+# Related to https://github.com/thin-edge/tedge-rugix-image/issues/69
+# On RaspberryPiOS the image disables the wifi by default on 5Ghz devices if the country code is not set
+# but since we are building generic images the wifi will be enabled by default.
+#
+# For background checkout the following links
+# * https://github.com/RPi-Distro/pi-gen/issues/414
+# * https://github.com/RPi-Distro/pi-gen/blob/master/stage2/02-net-tweaks/01-run.sh#L28
+if [ "$RECIPE_PARAM_DISABLE_RFKILL" = "true" ] && [ -d /var/lib/systemd/rfkill ]; then
+    echo "Enabling wifi on 5GHz enabled devices by default" >&2
+    for filename in /var/lib/systemd/rfkill/*:wlan; do
+        echo 0 > "$filename"
+    done
+fi
+
 # Set country code otherwise the wifi can be disabled by default
 RECIPE_PARAM_COUNTRY_CODE=${RECIPE_PARAM_COUNTRY_CODE:-$SECRETS_WIFI_COUNTRY_CODE}
 if command -V raspi-config >/dev/null 2>&1; then
