@@ -70,7 +70,7 @@ ExecStartPre=/bin/mkdir -m 740 -p /var/lib/mosquitto
 ExecStartPre=/bin/chown -R mosquitto:mosquitto /var/lib/mosquitto
 ExecStartPre=/bin/mkdir -m 740 -p /var/log/mosquitto
 ExecStartPre=/bin/chown -R mosquitto:mosquitto /var/log/mosquitto
-ExecStartPre=/bin/sh -c '[ \$(tedge config get mqtt.bridge.built_in) = "false" ] && /bin/chown -R mosquitto:mosquitto "\$(tedge config get device.key_path)" "\$(tedge config get device.cert_path)"'
+ExecStartPre=/bin/sh -c 'if [ \$(tedge config get mqtt.bridge.built_in) = "false" ]; then /bin/chown -R mosquitto:mosquitto "\$(tedge config get device.key_path)" "\$(tedge config get device.cert_path)"; fi'
 EOT
     chmod 644 /etc/systemd/system/mosquitto.service.d/override.conf
 }
@@ -90,7 +90,7 @@ ExecStartPre=/bin/mkdir -m 740 -p /var/lib/mosquitto
 ExecStartPre=/bin/chown -R mosquitto:mosquitto /var/lib/mosquitto
 ExecStartPre=/bin/mkdir -m 740 -p /var/log/mosquitto
 ExecStartPre=/bin/chown -R mosquitto:mosquitto /var/log/mosquitto
-ExecStartPre=/bin/sh -c '[ \$(tedge config get mqtt.bridge.built_in) = "false" ] && /bin/chown -R mosquitto:mosquitto "\$(tedge config get device.key_path)" "\$(tedge config get device.cert_path)"'
+ExecStartPre=/bin/sh -c 'if [ \$(tedge config get mqtt.bridge.built_in) = "false" ]; then /bin/chown -R mosquitto:mosquitto "\$(tedge config get device.key_path)" "\$(tedge config get device.cert_path)"; fi'
 EOT
     chmod 644 /etc/systemd/system/mosquitto.service.d/override.conf
 }
