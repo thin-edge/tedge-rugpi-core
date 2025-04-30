@@ -46,6 +46,6 @@ target = "rpi-uboot"
 # - Raspberry Pi 1
 # - Raspberry Pi Zero
 [systems.tedge-raspios-armhf]
-layer = "tedge-raspios"
+layer = "tedge-raspios-legacy"
 architecture = "armhf"
 target = "rpi-uboot"

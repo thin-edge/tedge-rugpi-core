@@ -5,6 +5,9 @@ recipes = [
     # default tedge packages
     "defaults",
 
+    # containers
+    "docker",
+
     # Setup the network
     "setup-network",
 

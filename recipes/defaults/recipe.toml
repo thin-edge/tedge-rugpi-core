@@ -9,9 +9,6 @@ dependencies = [
     "set-wifi",
     "ssh",
 
-    # containers
-    "docker",
-
     # default cmdline options
     "boot-options",
 
