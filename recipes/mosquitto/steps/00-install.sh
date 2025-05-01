@@ -15,8 +15,8 @@ case "$DPKG_ARCH" in
     armhf)
         # armhf is not supported as the public debian repo refers to arm64 as armv7l and not armv6l.
         # This causes an incompatible bin fmt type to be installed for the target CPU.
-        echo "Skipping mosquitto update as it is only supported on arm64 images" >&2
-        exit 0
+        echo "Skipping mosquitto backports repo as it does not support raspbian armhf (armv6) architectures" >&2
+        ENABLE_BACKPORTS=0
         ;;
 esac
 
