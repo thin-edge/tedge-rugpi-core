@@ -56,14 +56,14 @@ build-setup:
 
 # Build an image
 # Note: use default output and rename later. see https://github.com/silitics/rugix/issues/53
-build-image:
+build-image: build-setup
     ./run-bakery bake image \
         --release-id "{{RELEASE_ID}}" \
         --release-version "{{VERSION}}" \
         {{SYSTEM}}
 
 # Build bundle (uncompressed)
-build-bundle-uncompressed OUTPUT="system.rugixb":
+build-bundle-uncompressed OUTPUT="system.rugixb": build-setup
     ./run-bakery bake bundle \
         --release-id "{{RELEASE_ID}}" \
         --release-version "{{VERSION}}" \
@@ -72,7 +72,7 @@ build-bundle-uncompressed OUTPUT="system.rugixb":
         build/{{SYSTEM}}/{{OUTPUT}}
 
 # Build build (compressed)
-build-bundle OUTPUT="system.rugixb":
+build-bundle OUTPUT="system.rugixb": build-setup
     ./run-bakery bake bundle \
         --release-id "{{RELEASE_ID}}" \
         --release-version "{{VERSION}}" \
