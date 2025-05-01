@@ -7,6 +7,10 @@ recipes = [
     "raspi-tpm",
     "setup-pkcs11",
 
+    # use avahi instead of systemd-resolved due to
+    # an issue with high cpu usage
+    "avahi-daemon",
+
     # containers
     # NOTE: docker has an issue building on armhf (suspected debian target arch mismatch)
     # which results in the installed binary running into a segmentation fault when run
@@ -21,4 +25,11 @@ recipes = [
 
     # SBOM
     "rugix-extra/simple-sbom",
+]
+
+# exclude specific recipes which are currently not supported on older versions
+# due to various issues
+exclude = [
+    # high cpu usage on rpi1
+    "systemd-resolved",
 ]
