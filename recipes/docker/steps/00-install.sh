@@ -20,8 +20,18 @@ curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --batch --yes --de
 chmod a+r /etc/apt/keyrings/docker.gpg
 
 # Add the repository to Apt sources:
+DOCKER_REPO=https://download.docker.com/linux/debian
+DPKG_ARCH=$(dpkg --print-architecture)
+case "$DPKG_ARCH" in
+    armhf)
+        # For armhf, raspbian requires armv6 compiled binaries, not armv7
+        # therefore the raspbian source is required instead of the standard debian repo
+        DOCKER_REPO=https://download.docker.com/linux/raspbian
+        ;;
+esac
+
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  "deb [arch=$DPKG_ARCH signed-by=/etc/apt/keyrings/docker.gpg] $DOCKER_REPO \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
    tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt-get update

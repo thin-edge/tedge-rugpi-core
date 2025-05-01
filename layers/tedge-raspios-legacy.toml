@@ -12,10 +12,7 @@ recipes = [
     "avahi-daemon",
 
     # containers
-    # NOTE: docker has an issue building on armhf (suspected debian target arch mismatch)
-    # which results in the installed binary running into a segmentation fault when run
-    # however installing at runtime works.
-    # "docker",
+    "docker",
 
     # Include u-boot setup on all image
     # to avoid having to create a layer per-bootloader
