@@ -11,4 +11,4 @@ dependencies = [
 # Values:
 #   release  - Latest official build
 #   main     - Latest build from the main branch (bleeding edge)
-channel = { default = "main" }
+channel = { default = "release" }
