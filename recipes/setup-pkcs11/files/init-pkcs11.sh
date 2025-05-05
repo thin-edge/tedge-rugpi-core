@@ -70,7 +70,11 @@ sudo -u tedge $0 --type tpm2 --create --c8y-url example.c8y.io --token-url 'pkcs
 
 ## Renewal
 
-### All
+### TPM
+
+sudo -u tedge $0 --renew
+
+### All Others
 
 $0 --renew
 
@@ -146,7 +150,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "${DEVICE_ID:-}" ]; then
-    DEVICE_ID=$(tedge config get device.id || tedge-identity 2>/dev/null || hostname)
+    DEVICE_ID=$(tedge config get device.id 2>/dev/null || tedge-identity 2>/dev/null || hostname)
 fi
 
 # Set module defaults
@@ -172,10 +176,7 @@ case "$HSM_TYPE" in
         fi
         ;;
     *)
-        # Default to using opensc
-        if [ -z "$PKCS11_MODULE" ]; then
-            PKCS11_MODULE=$(find /usr/lib -name opensc-pkcs11.so | head -n1)
-        fi
+        # Don't use an explicit pkcs11 module, let the tooling choose the default
         ;;
 esac
 
@@ -204,12 +205,18 @@ elif [ -n "$PKCS11_MODULE" ]; then
     echo "Could not find PKCS11 Module. path=$PKCS11_MODULE" >&2
 fi
 
+# set common arguments to ensure p11tool finds the correct module if there are multiple
+P11_TOOL_ARGS=
+if [ -n "$PKCS11_MODULE" ]; then
+    P11_TOOL_ARGS="--provider=$PKCS11_MODULE"
+fi
+
 get_token() {
-    p11tool --list-tokens 2>/dev/null | grep "token=$TOKEN_LABEL" | awk '{ print $2 }' | head -n1
+    p11tool $P11_TOOL_ARGS --list-tokens 2>/dev/null | grep "token=$TOKEN_LABEL" | awk '{ print $2 }' | head -n1
 }
 
 get_key() {
-    p11tool --login --list-all "$TOKEN_URL" 2>/dev/null | grep type=private | awk '{ print $2 }' | head -n1
+    p11tool $P11_TOOL_ARGS --login --list-all "$TOKEN_URL" 2>/dev/null | grep type=private | awk '{ print $2 }' | head -n1
 }
 
 init_private_key() {
@@ -218,8 +225,8 @@ init_private_key() {
             ykman piv keys generate --algorithm ECCP256 9a "$PUBLIC_KEY"
             ;;
         nitrokey)
-            p11tool --initialize-pin "$TOKEN_URL"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --initialize-pin "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
             ;;
         tpm2)
             # TODO: Should the store be removed if the user wants to re-initialize it?
@@ -228,13 +235,13 @@ init_private_key() {
             mkdir -p "$TPM2_PKCS11_STORE"
             chown -R tedge:tedge "$TPM2_PKCS11_STORE"
 
-            p11tool --initialize --label "$TOKEN_LABEL" --set-so-pin "$GNUTLS_SO_PIN" "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --initialize --label "$TOKEN_LABEL" --set-so-pin "$GNUTLS_SO_PIN" "$TOKEN_URL"
 
             # refresh as there should be a new token created
-            TOKEN_URL=$(p11tool --list-token-urls | grep "token=$TOKEN_LABEL" | head -n 1)
+            TOKEN_URL=$(p11tool $P11_TOOL_ARGS --list-token-urls | grep "token=$TOKEN_LABEL" | head -n 1)
 
-            p11tool --initialize-pin "$TOKEN_URL"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --initialize-pin "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
             ;;
         softhsm2)
             softhsm2-util --init-token --free --label "$TOKEN_LABEL" --pin "$GNUTLS_PIN" --so-pin "$GNUTLS_SO_PIN"
@@ -245,8 +252,8 @@ init_private_key() {
             ;;
         *)
             echo "Warning: Unknown HSM type (name=$1). Trying to initialize using standard p11tool commands" >&2
-            p11tool --initialize-pin "$TOKEN_URL"
-            p11tool --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --initialize-pin "$TOKEN_URL"
+            p11tool $P11_TOOL_ARGS --login --generate-privkey ECDSA --curve=secp256r1 --label "$TOKEN_LABEL" --outfile "$PUBLIC_KEY" "$TOKEN_URL"
             ;;
     esac
 }
@@ -277,7 +284,7 @@ BEGIN{
 #
 if [ -z "$TOKEN_URL" ]; then
     # Select first URL
-    TOKEN_URL=$(p11tool --list-token-urls | head -n 1)
+    TOKEN_URL=$(p11tool $P11_TOOL_ARGS --list-token-urls | head -n 1)
 fi
 
 # check if a key can be found or not (to auto detect whether an initialization is needed)
@@ -287,7 +294,11 @@ fi
 
 # Create the key if required
 if [ -z "$KEY" ]; then
-    init_private_key "$HSM_TYPE"
+    case "$ACTION" in
+        create)
+            init_private_key "$HSM_TYPE"
+            ;;
+    esac
     TOKEN_URL=$(get_token)
 fi
 echo "Using Token URL: $TOKEN_URL" >&2
@@ -362,6 +373,7 @@ if [ "$IS_SELF_SIGNED" = 0 ]; then
     [ -f "$CSR_PATH" ] && chmod 644 "$CSR_PATH"
     
     "$CERT_TOOL" \
+        $P11_TOOL_ARGS \
         --generate-request \
         --template "$CSR_TEMPLATE" \
         --load-privkey "$KEY" \
@@ -376,6 +388,7 @@ else
     [ -f "$CERT_PATH" ] && chmod 644 "$CERT_PATH"
 
     "$CERT_TOOL" \
+        $P11_TOOL_ARGS \
         --generate-self-signed \
         --template "$CSR_TEMPLATE" \
         --load-privkey "$KEY" \
@@ -391,11 +404,10 @@ case "$ACTION" in
         echo "Renewed certificate successfully" >&2
         ;;
     create)
-        # TODO: when running as the tedge user, it does not have permissions to stop the service
-        # Stop any existing tedge-p11-server instance so it can reload the new key (used later on)
-        # if command -V systemctl >/dev/null 2>&1; then
-        #     sudo systemctl stop tedge-p11-server.service ||:
-        # fi
+        # Restart the existing tedge-p11-server instance so it can reload the new key (used later on)
+        if command -V systemctl >/dev/null 2>&1; then
+            sudo systemctl restart tedge-p11-server.socket ||:
+        fi
 
         if [ "$IS_SELF_SIGNED" = 1 ]; then
             echo "Uploading self-signed certificate" >&2
