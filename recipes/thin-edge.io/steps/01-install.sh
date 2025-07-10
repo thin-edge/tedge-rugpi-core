@@ -14,6 +14,23 @@ fi
 
 RECIPE_PARAM_CHANNEL="${RECIPE_PARAM_CHANNEL:-release}"
 
+# Check if the desired tedge group id is already being used by another group
+# if so, reassign it.
+# On Debian trixie, the 'render' group is already to gid 992 causing the conflict
+EXISTING_GROUP_GID=$(getent group 992 ||:)
+if [ -n "$EXISTING_GROUP_GID" ]; then
+    case "$EXISTING_GROUP_GID" in
+        tedge:x:992:)
+            # nothing to do
+            ;;
+        *)
+            group_name=$(echo "$EXISTING_GROUP_GID" | cut -d: -f1)
+            echo "Reassigning ${group_name} gid to 892 (from ${EXISTING_GROUP_GID})" >&2
+            groupmod -g 892 "$group_name"
+            ;;
+    esac
+fi
+
 # Used fixed uid/gid to avoid permission issues across A/B updates
 groupadd --system --gid 992 tedge || groupmod -g 992 tedge
 useradd --system --no-create-home --shell "/bin/false" --uid 999 --gid 992 tedge || usermod -u 999 tedge
