@@ -7,6 +7,9 @@ MANUAL_DOWNLOAD=0
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 CHECK_META_INFO=0
 
+# Enable indexes whilst using dynamic or static delta updates as the first delta update
+DELTA_UPDATE_METHOD=${DELTA_UPDATE_METHOD:-casync}
+
 # Exit codes
 OK=0
 FAILED=1
@@ -233,6 +236,27 @@ download_file() {
 
 install() {
     url="$1"
+
+    # TODO: Is this required, or can the update provide additional information about what
+    # type of update it is and if the indexes are required or not
+    case "$DELTA_UPDATE_METHOD" in
+        casync)
+            # Note: It is possible that the need for this may be removed in future rugix versions
+            local_log "Preparing index for dynamic delta updates"
+            if [ "$BOOT_ACTIVE" = "a" ]; then
+                $SUDO rugix-ctrl slots create-index boot-a casync-64 sha512-256
+                $SUDO rugix-ctrl slots create-index system-a casync-64 sha512-256
+            else
+                $SUDO rugix-ctrl slots create-index boot-b casync-64 sha512-256
+                $SUDO rugix-ctrl slots create-index system-b casync-64 sha512-256
+            fi
+            ;;
+        xdelta)
+            # TODO: How to check if the slot can be used or not for delta updates
+            # See https://oss.silitics.com/rugix/docs/next/ctrl/delta-updates/#static-delta-updates
+            ;;
+    esac
+
     set +e
     case "$url" in
         http://*|https://*)
