@@ -4,6 +4,7 @@ FIRMWARE_NAME=
 FIRMWARE_VERSION=
 FIRMWARE_URL=
 MANUAL_DOWNLOAD=0
+STREAM_DOWNLOAD=1
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 CHECK_META_INFO=0
 
@@ -261,7 +262,11 @@ install() {
     case "$url" in
         http://*|https://*)
             log "Downloading and streaming image to rugix"
-            download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
+            if [ "$STREAM_DOWNLOAD" = 1 ]; then
+                download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
+            else
+                $SUDO rugix-ctrl update install --reboot no "$url"
+            fi
             ;;
         *)
             # It is a file
