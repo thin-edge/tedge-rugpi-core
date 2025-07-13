@@ -287,14 +287,14 @@ install() {
     esac
 
     # Create mark file which is used by the restart state to reboot into the spare partition
-    touch "$REBOOT_SPARE_REQUEST"
+    touch "$REBOOT_SPARE_REQUEST" ||:
     exit "$EXIT_CODE"
 }
 
 restart() {
     # NOTE: This function should not be called in the script directly but rather via the system.toml
     if [ -f "$REBOOT_SPARE_REQUEST" ]; then
-        rm -f "$REBOOT_SPARE_REQUEST"
+        rm -f "$REBOOT_SPARE_REQUEST" ||:
 
         message=$(printf '{"text":"Rebooting into spare partition (%s -> %s)","partition":"%s"}' "$BOOT_ACTIVE" "$BOOT_SPARE" "$BOOT_ACTIVE")
         tedge mqtt pub -q 1 "te/device/main///e/reboot_spare" "$message" ||:
