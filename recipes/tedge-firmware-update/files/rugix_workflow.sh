@@ -4,7 +4,7 @@ FIRMWARE_NAME=
 FIRMWARE_VERSION=
 FIRMWARE_URL=
 MANUAL_DOWNLOAD=0
-STREAM_DOWNLOAD=1
+STREAM_DOWNLOAD=auto
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 CHECK_META_INFO=0
 
@@ -144,6 +144,7 @@ download() {
     #
     # Change url to a local url using the c8y proxy
     #
+    url_hosted_in_c8y=0
     case "$url" in
         https://*/inventory/binaries/*)
             # Cumulocity URL, use the c8y auth proxy service
@@ -151,6 +152,7 @@ download() {
             c8y_proxy_host=$(tedge config get c8y.proxy.client.host)
             c8y_proxy_port=$(tedge config get c8y.proxy.client.port)
             tedge_url="http://${c8y_proxy_host}:${c8y_proxy_port}/c8y/$partial_path"
+            url_hosted_in_c8y=1
             ;;
         http://*|https://*)
             # External URL, pass it untouched
@@ -163,6 +165,17 @@ download() {
             # Assume url is actually a file and just go to the next state
             update_state "$(printf '{"url":"%s"}\n' "$url")"
             return "$OK"
+            ;;
+    esac
+
+    case "$STREAM_DOWNLOAD" in
+        auto)
+            if [ "$url_hosted_in_c8y" = 1 ]; then
+                local_log "Letting rugix handling the artifact download (to enable both dynamic and static delta updates)"
+                STREAM_DOWNLOAD=0
+            else
+                STREAM_DOWNLOAD=1
+            fi
             ;;
     esac
 
@@ -242,14 +255,18 @@ install() {
     # type of update it is and if the indexes are required or not
     case "$DELTA_UPDATE_METHOD" in
         casync)
-            # Note: It is possible that the need for this may be removed in future rugix versions
-            local_log "Preparing index for dynamic delta updates"
-            if [ "$BOOT_ACTIVE" = "a" ]; then
-                $SUDO rugix-ctrl slots create-index boot-a casync-64 sha512-256
-                $SUDO rugix-ctrl slots create-index system-a casync-64 sha512-256
-            else
-                $SUDO rugix-ctrl slots create-index boot-b casync-64 sha512-256
-                $SUDO rugix-ctrl slots create-index system-b casync-64 sha512-256
+            # Note: dynamic updates aren't supported when streaming downloads as rugix needs
+            # do send the HTTP request to download the relevant portions of the binary
+            if [ "$STREAM_DOWNLOAD" = 0 ]; then
+                # Note: It is possible that the need for this may be removed in future rugix versions
+                local_log "Preparing index for dynamic delta updates"
+                if [ "$BOOT_ACTIVE" = "a" ]; then
+                    $SUDO rugix-ctrl slots create-index boot-a casync-64 sha512-256
+                    $SUDO rugix-ctrl slots create-index system-a casync-64 sha512-256
+                else
+                    $SUDO rugix-ctrl slots create-index boot-b casync-64 sha512-256
+                    $SUDO rugix-ctrl slots create-index system-b casync-64 sha512-256
+                fi
             fi
             ;;
         xdelta)
