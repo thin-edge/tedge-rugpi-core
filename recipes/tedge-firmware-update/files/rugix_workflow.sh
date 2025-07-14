@@ -361,6 +361,10 @@ commit() {
             log "rugix-ctrl returned code: $EXIT_CODE. Rolling back to previous partition"
             ;;
     esac
+
+    # update inventory scripts after the commit has been changed
+    $SUDO systemctl start tedge-inventory.service || local_log "Failed to run tedge-inventory.service"
+
     exit "$EXIT_CODE"
 }
 
@@ -376,6 +380,9 @@ rollback_successful() {
             fi
         fi
     done
+
+    # update inventory scripts after the commit has been changed
+    $SUDO systemctl start tedge-inventory.service || local_log "Failed to run tedge-inventory.service"
 
     log "Firmware update failed, but the rollback was successful. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
 }
