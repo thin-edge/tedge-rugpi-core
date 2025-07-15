@@ -4,8 +4,12 @@ FIRMWARE_NAME=
 FIRMWARE_VERSION=
 FIRMWARE_URL=
 MANUAL_DOWNLOAD=0
+STREAM_DOWNLOAD=auto
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 CHECK_META_INFO=0
+
+# Enable indexes whilst using dynamic or static delta updates as the first delta update
+DELTA_UPDATE_METHOD=${DELTA_UPDATE_METHOD:-casync}
 
 # Exit codes
 OK=0
@@ -140,6 +144,7 @@ download() {
     #
     # Change url to a local url using the c8y proxy
     #
+    url_hosted_in_c8y=0
     case "$url" in
         https://*/inventory/binaries/*)
             # Cumulocity URL, use the c8y auth proxy service
@@ -147,6 +152,7 @@ download() {
             c8y_proxy_host=$(tedge config get c8y.proxy.client.host)
             c8y_proxy_port=$(tedge config get c8y.proxy.client.port)
             tedge_url="http://${c8y_proxy_host}:${c8y_proxy_port}/c8y/$partial_path"
+            url_hosted_in_c8y=1
             ;;
         http://*|https://*)
             # External URL, pass it untouched
@@ -159,6 +165,17 @@ download() {
             # Assume url is actually a file and just go to the next state
             update_state "$(printf '{"url":"%s"}\n' "$url")"
             return "$OK"
+            ;;
+    esac
+
+    case "$STREAM_DOWNLOAD" in
+        auto)
+            if [ "$url_hosted_in_c8y" = 1 ]; then
+                local_log "Letting rugix handling the artifact download (to enable both dynamic and static delta updates)"
+                STREAM_DOWNLOAD=0
+            else
+                STREAM_DOWNLOAD=1
+            fi
             ;;
     esac
 
@@ -233,11 +250,40 @@ download_file() {
 
 install() {
     url="$1"
+
+    # TODO: Is this required, or can the update provide additional information about what
+    # type of update it is and if the indexes are required or not
+    case "$DELTA_UPDATE_METHOD" in
+        casync)
+            # Note: dynamic updates aren't supported when streaming downloads as rugix needs
+            # do send the HTTP request to download the relevant portions of the binary
+            if [ "$STREAM_DOWNLOAD" = 0 ]; then
+                # Note: It is possible that the need for this may be removed in future rugix versions
+                local_log "Preparing index for dynamic delta updates"
+                if [ "$BOOT_ACTIVE" = "a" ]; then
+                    $SUDO rugix-ctrl slots create-index boot-a casync-64 sha512-256
+                    $SUDO rugix-ctrl slots create-index system-a casync-64 sha512-256
+                else
+                    $SUDO rugix-ctrl slots create-index boot-b casync-64 sha512-256
+                    $SUDO rugix-ctrl slots create-index system-b casync-64 sha512-256
+                fi
+            fi
+            ;;
+        xdelta)
+            # TODO: How to check if the slot can be used or not for delta updates
+            # See https://oss.silitics.com/rugix/docs/next/ctrl/delta-updates/#static-delta-updates
+            ;;
+    esac
+
     set +e
     case "$url" in
         http://*|https://*)
             log "Downloading and streaming image to rugix"
-            download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
+            if [ "$STREAM_DOWNLOAD" = 1 ]; then
+                download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
+            else
+                $SUDO rugix-ctrl update install --reboot no "$url"
+            fi
             ;;
         *)
             # It is a file
@@ -258,14 +304,14 @@ install() {
     esac
 
     # Create mark file which is used by the restart state to reboot into the spare partition
-    touch "$REBOOT_SPARE_REQUEST"
+    touch "$REBOOT_SPARE_REQUEST" ||:
     exit "$EXIT_CODE"
 }
 
 restart() {
     # NOTE: This function should not be called in the script directly but rather via the system.toml
     if [ -f "$REBOOT_SPARE_REQUEST" ]; then
-        rm -f "$REBOOT_SPARE_REQUEST"
+        rm -f "$REBOOT_SPARE_REQUEST" ||:
 
         message=$(printf '{"text":"Rebooting into spare partition (%s -> %s)","partition":"%s"}' "$BOOT_ACTIVE" "$BOOT_SPARE" "$BOOT_ACTIVE")
         tedge mqtt pub -q 1 "te/device/main///e/reboot_spare" "$message" ||:
@@ -332,6 +378,10 @@ commit() {
             log "rugix-ctrl returned code: $EXIT_CODE. Rolling back to previous partition"
             ;;
     esac
+
+    # update inventory scripts after the commit has been changed
+    $SUDO systemctl start tedge-inventory.service || local_log "Failed to run tedge-inventory.service"
+
     exit "$EXIT_CODE"
 }
 
@@ -347,6 +397,9 @@ rollback_successful() {
             fi
         fi
     done
+
+    # update inventory scripts after the commit has been changed
+    $SUDO systemctl start tedge-inventory.service || local_log "Failed to run tedge-inventory.service"
 
     log "Firmware update failed, but the rollback was successful. partition=$BOOT_ACTIVE, default=$BOOT_DEFAULT"
 }

@@ -19,8 +19,20 @@ if [ ! -f "$ARTIFACT_FILE" ]; then
     exit 0
 fi
 
+SUDO=""
+if command -V sudo >/dev/null 2>&1; then
+    SUDO="sudo"
+fi
+
 NAME=$(jq -r '.name' "$ARTIFACT_FILE")
 VERSION=$(jq -r '.release.version // "0.0"' "$ARTIFACT_FILE")
 
 echo "name=\"$NAME\""
 echo "version=\"$VERSION\""
+
+# publish system image hash of the active partition to help selection of correct delta update
+ACTIVE_PARTITION=$(rugix-ctrl system info --json | jq -r .boot.activeGroup)
+SYSTEM_IMAGE_HASH=$($SUDO rugix-ctrl system info --json | jq -r '.slots."system-'"${ACTIVE_PARTITION}"'".hashes.sha512_256' ||:)
+if [ -n "$SYSTEM_IMAGE_HASH" ]; then
+    echo "system=\"$SYSTEM_IMAGE_HASH\""
+fi
