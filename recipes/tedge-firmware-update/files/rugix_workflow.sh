@@ -138,6 +138,23 @@ executing() {
     log "Starting firmware update. Current partition is $BOOT_ACTIVE, so update will be applied to $BOOT_SPARE"
 }
 
+set_streaming_setting() {
+    if [ "$STREAM_DOWNLOAD" != "auto" ]; then
+        return
+    fi
+
+    url="$1"
+    case "$url" in
+        */inventory/binaries/*)
+            # disable streaming as rugix can use the c8y local proxy service
+            STREAM_DOWNLOAD=0
+            ;;
+        *)
+            STREAM_DOWNLOAD=1
+            ;;
+    esac
+}
+
 download() {
     url="$1"
 
@@ -165,17 +182,6 @@ download() {
             # Assume url is actually a file and just go to the next state
             update_state "$(printf '{"url":"%s"}\n' "$url")"
             return "$OK"
-            ;;
-    esac
-
-    case "$STREAM_DOWNLOAD" in
-        auto)
-            if [ "$url_hosted_in_c8y" = 1 ]; then
-                local_log "Letting rugix handling the artifact download (to enable both dynamic and static delta updates)"
-                STREAM_DOWNLOAD=0
-            else
-                STREAM_DOWNLOAD=1
-            fi
             ;;
     esac
 
@@ -251,6 +257,8 @@ download_file() {
 install() {
     url="$1"
 
+    set_streaming_setting "$url"
+
     # TODO: Is this required, or can the update provide additional information about what
     # type of update it is and if the indexes are required or not
     case "$DELTA_UPDATE_METHOD" in
@@ -278,10 +286,11 @@ install() {
     set +e
     case "$url" in
         http://*|https://*)
-            log "Downloading and streaming image to rugix"
             if [ "$STREAM_DOWNLOAD" = 1 ]; then
+                log "Downloading and streaming image to rugix"
                 download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
             else
+                log "Downloading image using rugix"
                 $SUDO rugix-ctrl update install --reboot no "$url"
             fi
             ;;
