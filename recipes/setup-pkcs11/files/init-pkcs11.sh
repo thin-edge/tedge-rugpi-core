@@ -58,13 +58,13 @@ $0 --create --type nitrokey --c8y-url example.c8y.io --token-url 'pkcs11:model=P
 
 ### SoftHSM2
 
-$0 --type softhsm2 --create --c8y-url example.c8y.io
+sudo $0 --type softhsm2 --create --c8y-url example.c8y.io
 # Initialize private key using softhsm2, and use the Cumulocity CA to request a certificate
 
 
 ### TPM2
 
-sudo -u tedge $0 --type tpm2 --create --c8y-url example.c8y.io --token-url 'pkcs11:model=SLB9672%00%00%00%00%00%00%00%00%00;manufacturer=Infineon;serial=0000000000000000;token='
+sudo $0 --type tpm2 --create --c8y-url example.c8y.io --token-url 'pkcs11:model=SLB9672%00%00%00%00%00%00%00%00%00;manufacturer=Infineon;serial=0000000000000000;token='
 # Initialize private key using a tpm 2.0 module, and use the Cumulocity CA to request a certificate
 
 
@@ -148,6 +148,11 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "This script must be run as root. Please use sudo or run as root." >&2
+    exit 1
+fi
 
 if [ -z "${DEVICE_ID:-}" ]; then
     DEVICE_ID=$(tedge config get device.id 2>/dev/null || tedge-identity 2>/dev/null || hostname)
@@ -399,20 +404,20 @@ fi
 
 case "$ACTION" in
     renew)
-        sudo tedge cert renew c8y --csr-path "$CSR_PATH"
-        sudo tedge reconnect c8y
+        tedge cert renew c8y --csr-path "$CSR_PATH"
+        tedge reconnect c8y
         echo "Renewed certificate successfully" >&2
         ;;
     create)
         # Restart the existing tedge-p11-server instance so it can reload the new key (used later on)
         if command -V systemctl >/dev/null 2>&1; then
-            sudo systemctl restart tedge-p11-server.socket ||:
+            systemctl restart tedge-p11-server.socket ||:
         fi
 
         if [ "$IS_SELF_SIGNED" = 1 ]; then
             echo "Uploading self-signed certificate" >&2
-            sudo tedge cert upload c8y
-            sudo tedge reconnect c8y
+            tedge cert upload c8y
+            tedge reconnect c8y
             exit 0
         fi
 
@@ -422,15 +427,25 @@ case "$ACTION" in
         fi
 
         if [ -n "$C8Y_URL" ]; then
+            echo "" >&2
             echo "Register in Cumulocity using:" >&2
             echo "" >&2
             echo "  https://$C8Y_URL/apps/devicemanagement/index.html#/deviceregistration?externalId=$DEVICE_ID&one-time-password=$DEVICE_ONE_TIME_PASSWORD" >&2
             echo "" >&2
         fi
 
-        sudo tedge cert download c8y --device-id "$DEVICE_ID" --csr-path "$CSR_PATH" --one-time-password "$DEVICE_ONE_TIME_PASSWORD" --retry-every 5s
-        sudo tedge reconnect c8y
-        echo "Downloaded certificate successfully" >&2
+        if ! tedge cert download c8y --device-id "$DEVICE_ID" --csr-path "$CSR_PATH" --one-time-password "$DEVICE_ONE_TIME_PASSWORD" --retry-every 5s 2>/dev/null; then
+            echo "Failed to download certificate from Cumulocity" >&2
+            exit 1
+        fi
+        echo "Successfully downloaded certificate. Trying to connect with the cloud..." >&2
+        
+        if ! tedge reconnect c8y; then
+            echo "Failed to connect to Cumulocity. Please look through the console messages for details, or try running with --debug" >&2
+            exit 1
+        fi
+
+        printf '\nSuccessfully connected the device to the cloud!\n' >&2
         ;;
     *)
         echo "No action given by the user" >&2
