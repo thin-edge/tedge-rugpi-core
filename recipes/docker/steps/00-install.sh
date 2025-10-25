@@ -46,6 +46,9 @@ apt-get install -y --no-install-recommends \
 
 usermod -aG docker tedge
 
+# default daemon settings
+install -D -m 644 "${RECIPE_DIR}/files/daemon.json" -t /etc/docker/
+
 # Copy Docker persist file
 install -D -m 644 "${RECIPE_DIR}/files/docker.toml" -t /etc/rugix/state
 
