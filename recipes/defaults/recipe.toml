@@ -16,4 +16,6 @@ dependencies = [
 
     # enable mdns (for statically compiled musl binaries)
     "systemd-resolved",
+
+    "systemd-journald-defaults",
 ]
