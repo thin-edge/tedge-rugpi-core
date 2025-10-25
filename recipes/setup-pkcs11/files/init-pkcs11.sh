@@ -18,7 +18,7 @@ PKCS11_MODULE="${PKCS11_MODULE:-}"
 KEY="${KEY:-}"
 IS_SELF_SIGNED=0
 
-ACTION=
+ACTION="create"
 
 HSM_TYPE="${HSM_TYPE:-}"
 
@@ -32,8 +32,6 @@ $0 [OPTIONS]
 
 ARGUMENTS
   --c8y-url <url>           Cumulocity URL
-  --create                  Request a device certificate using the Cumulocity CA
-  --renew                   Renew the device certificate using the Cumulocity CA
   --type <string>           Type of HSM (using the PKCS#11 interface) to use. Available values: [softhsm2, yubikey, nitrokey, tpm2]
   --token-url <url>         Token PKCS#11 URL which is to be used for initialization.
   --key <url>               Key's PKCS#11 URL. If left blank then it will be auto detected
@@ -48,35 +46,22 @@ ARGUMENTS
 
 EXAMPLES
 
-## Initialization
+## Nitrokey
 
-### Nitrokey
-
-$0 --create --type nitrokey --c8y-url example.c8y.io --token-url 'pkcs11:model=PKCS%2315%20emulated;manufacturer=www.CardContact.de;serial=DENK0400089;token=SmartCard-HSM%20%28UserPIN%29'
+$0 --type nitrokey --c8y-url example.c8y.io --token-url 'pkcs11:model=PKCS%2315%20emulated;manufacturer=www.CardContact.de;serial=DENK0400089;token=SmartCard-HSM%20%28UserPIN%29'
 # Initialize private key using nitrokey, where you have to specify the slot where the nitrokey is accessible from
 
 
-### SoftHSM2
+## SoftHSM2
 
-sudo $0 --type softhsm2 --create --c8y-url example.c8y.io
+sudo $0 --type softhsm2 --c8y-url example.c8y.io
 # Initialize private key using softhsm2, and use the Cumulocity CA to request a certificate
 
 
-### TPM2
+## TPM2
 
-sudo $0 --type tpm2 --create --c8y-url example.c8y.io --token-url 'pkcs11:model=SLB9672%00%00%00%00%00%00%00%00%00;manufacturer=Infineon;serial=0000000000000000;token='
+sudo $0 --type tpm2 --c8y-url example.c8y.io --token-url 'pkcs11:model=SLB9672%00%00%00%00%00%00%00%00%00;manufacturer=Infineon;serial=0000000000000000;token='
 # Initialize private key using a tpm 2.0 module, and use the Cumulocity CA to request a certificate
-
-
-## Renewal
-
-### TPM
-
-sudo -u tedge $0 --renew
-
-### All Others
-
-$0 --renew
 
 EOT
 }
@@ -126,12 +111,6 @@ while [ $# -gt 0 ]; do
         --c8y-url)
             C8Y_URL="$2"
             shift
-            ;;
-        --create)
-            ACTION="create"
-            ;;
-        --renew)
-            ACTION="renew"
             ;;
         # Cumulocity Enrollment token
         --one-time-password|-p)
@@ -403,11 +382,6 @@ else
 fi
 
 case "$ACTION" in
-    renew)
-        tedge cert renew c8y --csr-path "$CSR_PATH"
-        tedge reconnect c8y
-        echo "Renewed certificate successfully" >&2
-        ;;
     create)
         # Restart the existing tedge-p11-server instance so it can reload the new key (used later on)
         if command -V systemctl >/dev/null 2>&1; then
@@ -445,7 +419,7 @@ case "$ACTION" in
             exit 1
         fi
 
-        printf '\nSuccessfully connected the device to the cloud!\n' >&2
+        printf '\nSuccessfully connected the device to the cloud!\n\n' >&2
         ;;
     *)
         echo "No action given by the user" >&2
