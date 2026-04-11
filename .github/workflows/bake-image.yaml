@@ -44,6 +44,7 @@ jobs:
       IMAGE_NAME: ${{ matrix.job.system }}_${{ needs.info.outputs.version }}
       VERSION: ${{needs.info.outputs.version}}
       DOCKER: ${{ matrix.job.engine || 'podman' }}
+      SUDO: ${{ matrix.job.sudo || '' }}
     environment:
       name: Test
     strategy:
@@ -56,7 +57,7 @@ jobs:
           - { system: tedge-debian-12-efi-amd64, runner: ubuntu-latest }
           - { system: tedge-raspios-arm64-tryboot, runner: ubuntu-24.04-arm }
           - { system: tedge-raspios-arm64, runner: ubuntu-24.04-arm }
-          - { system: tedge-raspios-armhf, runner: ubuntu-latest, engine: docker }
+          - { system: tedge-raspios-armhf, runner: ubuntu-latest, engine: docker, sudo: 'sudo' }
     steps:
       - uses: actions/checkout@v6
         with:
@@ -85,8 +86,8 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          cp build/${{ matrix.job.system }}/system.img build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
-          cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
+          $SUDO cp build/${{ matrix.job.system }}/system.img build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
+          $SUDO cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
           ls -l build/${{ matrix.job.system }}/
           ls -l build/${{ matrix.job.system }}/artifacts/
 
@@ -100,7 +101,7 @@ jobs:
 
       - name: Compress Image (xz)
         run: |
-          xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
+          $SUDO xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
       
       - name: Upload Image
         uses: actions/upload-artifact@v7
