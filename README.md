@@ -6,7 +6,7 @@ To make the recipes and layers available, include the following in your `rugix-b
 
 ```toml
 [repositories]
-tedge-rugix-core = { git = "https://github.com/thin-edge/tedge-rugix-core.git", branch = "v1.0" }
+tedge-rugix-core = { git = "https://github.com/thin-edge/tedge-rugix-core.git", branch = "v0.9" }
 ```
 
 We follow [Cargo's flavor of semantic versioning](https://doc.rust-lang.org/cargo/reference/resolver.html#semver-compatibility).
