@@ -2,7 +2,7 @@
 import 'systems.just'
 
 # Use podman if available, otherwise fall back to docker (override with DOCKER env var)
-DOCKER := env("DOCKER", `command -v podman >/dev/null 2>&1 && echo podman || echo docker`)
+export DOCKER := env("DOCKER", `command -v podman >/dev/null 2>&1 && echo podman || echo docker`)
 
 # System image. Default to amd64 if the arch does not match
 DEFAULT_SYSTEM := if arch() == "aarch64" {
