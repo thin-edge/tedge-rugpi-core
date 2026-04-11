@@ -4,7 +4,6 @@ root = true
 recipes = [
     "core/debian-bootstrap",
 
-    # Use podman instead of docker as docker isn't available on trixie yet
     "docker",
     "parsec",
 ]
