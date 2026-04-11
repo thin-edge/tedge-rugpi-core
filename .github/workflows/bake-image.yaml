@@ -63,8 +63,8 @@ jobs:
 
       - uses: taiki-e/install-action@just
 
-      - name: Install dependencies
-        run: just build-setup
+      - name: Set up QEMU (binfmt)
+        uses: docker/setup-qemu-action@v3
 
       - name: Configure .env
         env:
