@@ -20,4 +20,39 @@ else
     log "Legacy c8y-command-plugin files have already been migrated"
 fi
 
+if [ -d /run/rugix/mounts/system/etc/tedge/sm-plugins ]; then
+    log "Adding new sm-plugins from system image (without overwriting existing files)"
+    for entry in /run/rugix/mounts/system/etc/tedge/sm-plugins/*; do
+        [ -e "$entry" ] || [ -L "$entry" ] || continue
+        name=$(basename "$entry")
+        dst="/etc/tedge/sm-plugins/$name"
+        if [ ! -e "$dst" ] && [ ! -L "$dst" ]; then
+            if [ -L "$entry" ]; then
+                ln -s "$(readlink "$entry")" "$dst"
+                chown -h "$(stat -c '%U:%G' "$entry")" "$dst"
+                log "Added sm-plugin symlink: $name"
+            else
+                cp -a "$entry" "$dst"
+                log "Added sm-plugin: $name"
+            fi
+        fi
+    done
+fi
+
+if [ -d /var/run/rugix/mounts/data/state/default/persist/etc/systemd/system/multi-user.target.wants ]; then
+    log "Migrating state for systemd services (without overwriting existing files)"
+    for service_file in /run/rugix/mounts/system/etc/systemd/system/multi-user.target.wants/*; do
+        service=$(basename "$service_file")
+        if [ -e "/etc/systemd/system/multi-user.target.wants/$service" ]; then
+            log "Service $service already exists, skipping"
+        else
+            if systemctl enable "$service" --now; then
+                log "Migrated service $service"
+            else
+                log "Failed to enable/start service $service"
+            fi
+        fi
+    done
+fi
+
 exit "${OK}"

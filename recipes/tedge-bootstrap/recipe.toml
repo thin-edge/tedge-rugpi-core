@@ -1,2 +1,2 @@
-#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-recipe.schema.json
+#:schema https://raw.githubusercontent.com/rugix/rugix-bakery/refs/tags/v0.9.0/schemas/rugix-bakery-recipe.schema.json
 description = "Provide tedge bootstrap scripts to easy onboarding"

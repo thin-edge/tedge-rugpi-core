@@ -1,12 +1,12 @@
 # Rugix thin-edge.io repository
 
-**Additional recipes and layers for [Rugix](https://oss.silitics.com/rugix/).**
+**Additional recipes and layers for [Rugix](https://rugix.org/).**
 
 To make the recipes and layers available, include the following in your `rugix-bakery.toml`:
 
 ```toml
 [repositories]
-tedge-rugix-core = { git = "https://github.com/thin-edge/tedge-rugix-core.git", branch = "v0.8-rugix" }
+tedge-rugix-core = { git = "https://github.com/thin-edge/tedge-rugix-core.git", branch = "v1.0" }
 ```
 
 We follow [Cargo's flavor of semantic versioning](https://doc.rust-lang.org/cargo/reference/resolver.html#semver-compatibility).
@@ -14,6 +14,27 @@ You can also use the most recent development version by omitting the `branch` pr
 Please be aware that this may break your builds if we introduce backwards-incompatible changes.
 
 ## Development
+
+### Prerequisites
+
+Rugix Bakery 0.9 uses rootless Podman by default to build images. Podman must be installed and running before building.
+
+**macOS** — install Podman via Homebrew and initialize a machine:
+
+```sh
+brew install podman
+podman machine init
+# increase the default memory to >= 4GB
+podman machine set --memory 4096
+podman machine start
+```
+
+**Linux** — install Podman via your package manager (e.g. `apt install podman`). Rootless Podman should work out of the box on most distributions without any machine setup.
+
+> **Note:** After upgrading from Rugix v0.8, delete the `.rugix` and `build` directories so they are recreated with the correct ownership for rootless Podman:
+> ```sh
+> rm -rf .rugix build
+> ```
 
 Rugix supports running an image in a VM to facilitate local development (without a device).
 

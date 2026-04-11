@@ -1,6 +1,6 @@
-#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-project.schema.json
+#:schema https://raw.githubusercontent.com/rugix/rugix-bakery/refs/tags/v0.9.0/schemas/rugix-bakery-project.schema.json
 [repositories]
-rugix-extra = { git = "https://github.com/silitics/rugix-extra.git", branch = "main" }
+rugix-extra = { git = "https://github.com/rugix/rugix-extra.git", branch = "main" }
 
 [systems.tedge-debian-13-efi-arm64]
 layer = "tedge-debian-13-efi"

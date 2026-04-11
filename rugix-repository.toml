@@ -1,6 +1,6 @@
-#:schema https://raw.githubusercontent.com/silitics/rugix/refs/tags/v0.8.0/schemas/rugix-bakery-repository.schema.json
+#:schema https://raw.githubusercontent.com/rugix/rugix-bakery/refs/tags/v0.9.0/schemas/rugix-bakery-repository.schema.json
 name = "tedge-rugix-core"
 description = "thin-edge.io recipes and layers for Rugix."
 
 [repositories]
-rugix-extra = { git = "https://github.com/silitics/rugix-extra.git", branch = "v0.8" }
+rugix-extra = { git = "https://github.com/rugix/rugix-extra.git", branch = "main" }

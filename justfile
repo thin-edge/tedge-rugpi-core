@@ -1,6 +1,9 @@
 # Load system recipes (generated via `just gen`)
 import 'systems.just'
 
+# Use podman if available, otherwise fall back to docker
+DOCKER := `command -v podman >/dev/null 2>&1 && echo podman || echo docker`
+
 # System image. Default to amd64 if the arch does not match
 DEFAULT_SYSTEM := if arch() == "aarch64" {
     "tedge-debian-12-efi-arm64"
@@ -18,10 +21,6 @@ export VERSION := env_var_or_default("VERSION", `date +'%Y%m%d.%H%M'`)
 # Release version id (combined name and version)
 export RELEASE_ID := env_var_or_default("RELEASE_ID", SYSTEM + "_" + VERSION)
 
-# Use ipv6 network on the host so it does not conflict with the docker in docker inside the VM
-# See https://github.com/silitics/rugix/issues/49
-DOCKER_NETWORK := "rugix-net"
-DOCKER_FLAGS := "--network=" + DOCKER_NETWORK
 
 # Generate a version name (that can be used in follow up commands)
 generate_version:
@@ -40,8 +39,6 @@ prepare:
         echo "$PUB_KEY" >> .env
     fi
 
-    docker network inspect {{DOCKER_NETWORK}} >/dev/null 2>&1 || docker network create --ipv6 -o com.docker.network.enable_ipv4=false {{DOCKER_NETWORK}}
-
 # list available systems that can be built
 list-systems:
     ./run-bakery list systems
@@ -52,7 +49,7 @@ list-systems:
 
 # Install cross-platform tools
 build-setup:
-    docker run --privileged --rm tonistiigi/binfmt --install all
+    {{DOCKER}} run --privileged --rm tonistiigi/binfmt --install all
 
 # Build an image
 # Note: use default output and rename later. see https://github.com/silitics/rugix/issues/53
@@ -85,7 +82,7 @@ test:
 
 # Start vm
 start-vm: prepare
-    DOCKER_FLAGS="{{DOCKER_FLAGS}}" ./run-bakery run \
+    ./run-bakery run \
         --release-id "{{RELEASE_ID}}" \
         --release-version "{{VERSION}}" \
         {{SYSTEM}} ||:

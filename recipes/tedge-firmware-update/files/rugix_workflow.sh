@@ -8,6 +8,9 @@ STREAM_DOWNLOAD=auto
 NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
 CHECK_META_INFO=0
 
+# Note: Use --insecure-skip-bundle-verification until signing is properly supported as users would be required to create a signing certificate
+SKIP_BUNDLE_VERIFICATION=${SKIP_BUNDLE_VERIFICATION:-1}
+
 # Enable indexes whilst using dynamic or static delta updates as the first delta update
 DELTA_UPDATE_METHOD=${DELTA_UPDATE_METHOD:-casync}
 
@@ -283,21 +286,26 @@ install() {
             ;;
     esac
 
+    RUGIX_INSTALL_ARGS=""
+    if [ "$SKIP_BUNDLE_VERIFICATION" = 1 ]; then
+        RUGIX_INSTALL_ARGS="--insecure-skip-bundle-verification"
+    fi
+
     set +e
     case "$url" in
         http://*|https://*)
             if [ "$STREAM_DOWNLOAD" = 1 ]; then
                 log "Downloading and streaming image to rugix"
-                download_file "$url" | $SUDO rugix-ctrl update install --reboot no -
+                download_file "$url" | $SUDO rugix-ctrl update install $RUGIX_INSTALL_ARGS --reboot no -
             else
                 log "Downloading image using rugix"
-                $SUDO rugix-ctrl update install --reboot no "$url"
+                $SUDO rugix-ctrl update install $RUGIX_INSTALL_ARGS --reboot no "$url"
             fi
             ;;
         *)
             # It is a file
             log "Installing local image to rugix"
-            $SUDO rugix-ctrl update install --reboot no "$url"
+            $SUDO rugix-ctrl update install $RUGIX_INSTALL_ARGS --reboot no "$url"
             ;;
     esac
     EXIT_CODE=$?
