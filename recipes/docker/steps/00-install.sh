@@ -6,11 +6,6 @@ if [ -f /etc/os-release ]; then
   . /etc/os-release
 fi
 
-if [ "$VERSION_CODENAME" = "trixie" ]; then
-  echo "WARNING: Skipping docker installation as it is not supported on trixie" >&2
-  exit 0
-fi
-
 # Add Docker's official GPG key:
 
 apt-get update
