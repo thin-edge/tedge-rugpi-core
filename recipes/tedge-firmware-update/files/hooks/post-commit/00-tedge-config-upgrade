@@ -1,0 +1,62 @@
+#!/bin/sh
+set -e
+#
+# Upgrade the tedge configuration to move the mapper specific settings
+# from the tedge.toml to mappers/<name>/mapper.toml
+#
+# Note: run the config upgrade after the commit
+# as running it during the pre-commit would potentially corrupt the files
+# for the rollback as the older version of the agent wouldn't know the new format.
+
+MAPPERS="c8y az aws"
+
+is_mapper_configured() {
+    if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null || tedge config get "${CLOUD_MAPPER}.mqtt" 2>/dev/null)" ]; then
+        return 0
+    fi
+    return 1
+}
+
+reconnect_mapper_if_configured() {
+    CLOUD_MAPPER="$1"
+
+    if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null || tedge config get "${CLOUD_MAPPER}.mqtt" 2>/dev/null)" ]; then
+
+        # Use a reconnect as it will also recreate the bridge config (in case it has changed)
+        sudo tedge reconnect "$CLOUD_MAPPER" || return 1
+
+        # re-run test as reconnect can silently fail
+        tedge connect "$CLOUD_MAPPER" --test || return 1
+
+    else
+        # If the configuration is not configured, then treat the device as healthy
+        echo "Mapper is not configured: $CLOUD_MAPPER" >&2
+        return 0
+    fi
+}
+
+# check if the configure upgrade is required by checking for the absence of the mapper's mapper.toml
+REQUIRES_UPGRADE=0
+for name in $MAPPERS; do
+    if is_mapper_configured; then
+        if [ ! -f "/etc/tedge/mappers/$name/mapper.toml" ]; then
+            REQUIRES_UPGRADE=1
+            break
+        fi
+    fi
+done
+
+if [ "$REQUIRES_UPGRADE" = 0 ]; then
+    echo "tedge configuration has already been upgraded" >&2
+    exit 0
+fi
+
+echo "Running tedge config upgrade" >&2
+tedge config upgrade || echo "WARN: tedge config upgrade failed" >&2
+
+# reconnect the mappers
+for name in $MAPPERS; do
+    reconnect_mapper_if_configured "$name" || echo "WARN: Failed to reconnect mapper: $name"
+done
+
+exit 0

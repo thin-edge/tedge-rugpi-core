@@ -30,3 +30,6 @@ ln -s /usr/bin/rugix_workflow.sh /usr/bin/rugpi_workflow.sh
 # https://oss.silitics.com/rugix/docs/ctrl/hooks#system-update-hooks
 install -m 0755 -d /etc/rugix/hooks/system-commit/pre-commit
 install -D -m 0755 "${RECIPE_DIR}/files/hooks/pre-commit/"* /etc/rugix/hooks/system-commit/pre-commit/
+
+install -m 0755 -d /etc/rugix/hooks/system-commit/post-commit
+install -D -m 0755 "${RECIPE_DIR}/files/hooks/post-commit/"* /etc/rugix/hooks/system-commit/post-commit/
