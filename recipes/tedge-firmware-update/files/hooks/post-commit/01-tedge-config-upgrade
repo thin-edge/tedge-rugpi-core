@@ -11,6 +11,7 @@ set -e
 MAPPERS="c8y az aws"
 
 is_mapper_configured() {
+    CLOUD_MAPPER="$1"
     if [ -n "$(tedge config get "${CLOUD_MAPPER}.url" 2>/dev/null || tedge config get "${CLOUD_MAPPER}.mqtt" 2>/dev/null)" ]; then
         return 0
     fi
@@ -38,7 +39,7 @@ reconnect_mapper_if_configured() {
 # check if the configure upgrade is required by checking for the absence of the mapper's mapper.toml
 REQUIRES_UPGRADE=0
 for name in $MAPPERS; do
-    if is_mapper_configured; then
+    if is_mapper_configured "$name"; then
         if [ ! -f "/etc/tedge/mappers/$name/mapper.toml" ]; then
             REQUIRES_UPGRADE=1
             break
