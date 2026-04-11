@@ -7,7 +7,9 @@ install -D -m 644 "${RECIPE_DIR}/files/globals.conf" -t /etc/NetworkManager/conf
 apt-get install -y systemd-resolved
 
 # systemd-resolved settings
-install -D -m 644 "${RECIPE_DIR}/files/resolved.conf" -T /etc/systemd/resolved.conf
+# Install as a drop-in (not the main resolved.conf) so it overrides any vendor
+# drop-ins shipped by the OS (e.g. RaspiOS Trixie disables mDNS globally).
+install -D -m 644 "${RECIPE_DIR}/files/resolved.conf" -T /etc/systemd/resolved.conf.d/99-tedge.conf
 systemctl enable systemd-resolved
 
 # Try to disable avahi-daemon (but don't fail if not present)
