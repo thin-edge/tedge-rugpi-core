@@ -84,8 +84,8 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          sudo cp build/${{ matrix.job.system }}/system.img build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
-          sudo cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
+          cp build/${{ matrix.job.system }}/system.img build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img
+          cp build/${{ matrix.job.system }}/artifacts/sbom.txt build/${{ matrix.job.system }}/artifacts/${{ env.IMAGE_NAME }}.sbom.txt
           ls -l build/${{ matrix.job.system }}/
           ls -l build/${{ matrix.job.system }}/artifacts/
 
@@ -99,7 +99,7 @@ jobs:
 
       - name: Compress Image (xz)
         run: |
-          sudo xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
+          xz -v "build/${{ matrix.job.system }}/${{ env.IMAGE_NAME }}.img"
       
       - name: Upload Image
         uses: actions/upload-artifact@v7
