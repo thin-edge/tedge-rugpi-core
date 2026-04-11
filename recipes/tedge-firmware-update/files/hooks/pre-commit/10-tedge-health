@@ -45,6 +45,9 @@ main() {
     NOT_OK=1
     RETRY_DELAY=30
 
+    # refresh the bridges in case if any rules have been updated
+    tedge refresh-bridges ||:
+
     for _i in $(seq 1 10); do
         if is_healthy; then
             NOT_OK=0
