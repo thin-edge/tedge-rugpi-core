@@ -10,7 +10,8 @@ apt-get install -y --no-install-recommends \
 install -D -m 644 "${RECIPE_DIR}/files/podman.toml" -t /etc/rugix/state
 
 # Add mosquitto listener which allows other containers access to the thin-edge.io MQTT broker
-install -D -m 0644 "${RECIPE_DIR}/files/tedge-networkcontainer.conf" -t /etc/tedge/mosquitto-conf/
+# use /etc/mosquitto/conf.d/ as it isn't persisted in the state management so it can't corrupt a rollback
+install -D -m 0644 "${RECIPE_DIR}/files/tedge-networkcontainer.conf" -t /etc/mosquitto/conf.d/
 
 # Add sudoers rules
 install -D -m 0644 "${RECIPE_DIR}/files/suoders.tedge-container-plugin" -T /etc/sudoers.d/tedge-container-plugin
