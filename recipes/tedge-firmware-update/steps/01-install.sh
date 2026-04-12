@@ -33,3 +33,6 @@ install -D -m 0755 "${RECIPE_DIR}/files/hooks/pre-commit/"* /etc/rugix/hooks/sys
 
 install -m 0755 -d /etc/rugix/hooks/system-commit/post-commit
 install -D -m 0755 "${RECIPE_DIR}/files/hooks/post-commit/"* /etc/rugix/hooks/system-commit/post-commit/
+
+install -m 0755 -d /etc/rugix/hooks/boot/post-init
+install -D -m 0755 "${RECIPE_DIR}/files/hooks/boot/post-init/"* /etc/rugix/hooks/boot/post-init/

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+# remove sticky state
+rm -f /etc/tedge/mosquitto-conf/tedge-networkcontainer.conf
