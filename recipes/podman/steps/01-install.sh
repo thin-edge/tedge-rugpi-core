@@ -15,3 +15,6 @@ install -D -m 644 "${RECIPE_DIR}/files/podman.toml" -t /etc/rugix/state
 
 # Add sudoers rules
 install -D -m 0644 "${RECIPE_DIR}/files/suoders.tedge-container-plugin" -T /etc/sudoers.d/tedge-container-plugin
+
+# enable the podman socket so that tedge-container-plugin can detect it
+systemctl enable podman.service
