@@ -1,0 +1,2 @@
+#:schema https://raw.githubusercontent.com/rugix/rugix-bakery/refs/tags/v0.9.0/schemas/rugix-bakery-recipe.schema.json
+description = "Set root password from environment variable SECRETS_ROOT_PASSWORD (or ROOT_PASSWORD). It will not do anything if the variable is not set"

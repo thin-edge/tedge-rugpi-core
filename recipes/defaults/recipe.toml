@@ -9,6 +9,8 @@ dependencies = [
     "set-wifi",
     "ssh",
 
+    "set-root-password",
+
     "vnstat",
 
     # default cmdline options
