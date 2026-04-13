@@ -113,8 +113,8 @@ install -D -m 644 -g tedge -o tedge "${RECIPE_DIR}/files/tedge-log-plugin.toml" 
 # disable tedge management of the mosquitto listener
 tedge config set mqtt.bind.enabled false
 
-# Remove the include directive added by tedge from mosquitto.conf (if present)
+# Remove the include_dir directive added by tedge from mosquitto.conf (if present)
 # since tedge users the built-in bridge now, there is no-need to add mosquitto configuration
 if [ -f /etc/mosquitto/mosquitto.conf ]; then
-    sed -i '/^include \/etc\/tedge\/mosquitto-conf/d' /etc/mosquitto/mosquitto.conf
+    sed -i '/^include_dir \/etc\/tedge\/mosquitto-conf/d' /etc/mosquitto/mosquitto.conf
 fi

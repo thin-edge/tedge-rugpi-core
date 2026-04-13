@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
-
 # remove stale mosquitto configuration
 # has been moved to /etc/mosquitto/conf.d/
 rm -f /etc/tedge/mosquitto-conf/tedge-networkcontainer.conf
 rm -f /etc/tedge/mosquitto-conf/tedge-mosquitto.conf
 rm -f /etc/tedge/mosquitto-conf/custom.conf
+exit 0
