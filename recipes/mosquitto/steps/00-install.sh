@@ -120,3 +120,5 @@ if ! grep -qF 'include "/etc/nftables.d/*.conf"' /etc/nftables.conf; then
     echo 'include "/etc/nftables.d/*.conf"' >> /etc/nftables.conf
 fi
 
+# enable firewall
+systemctl enable nftables.service
