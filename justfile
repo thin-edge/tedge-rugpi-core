@@ -15,6 +15,10 @@ DEFAULT_SYSTEM := if arch() == "aarch64" {
 
 SYSTEM := env("SYSTEM", DEFAULT_SYSTEM)
 
+# rugix version, e.g. RUGIX_VERSION=git-5667b45
+# Use git-5667b45 until rugix-bakery >=0.9.3 is released
+export RUGIX_VERSION := env_var_or_default("RUGIX_VERSION", "git-5667b45")
+
 # Default version (info only)
 export VERSION := env_var_or_default("VERSION", `date +'%Y%m%d.%H%M'`)
 
