@@ -36,3 +36,8 @@ install -D -m 0755 "${RECIPE_DIR}/files/hooks/post-commit/"* /etc/rugix/hooks/sy
 
 install -m 0755 -d /etc/rugix/hooks/boot/post-init
 install -D -m 0755 "${RECIPE_DIR}/files/hooks/boot/post-init/"* /etc/rugix/hooks/boot/post-init/
+
+# disable systemd-growfs-root as rugix should take care of expanding the partitions
+if command -V systemctl >/dev/null 2>&1; then
+    systemctl mask systemd-growfs-root.service
+fi

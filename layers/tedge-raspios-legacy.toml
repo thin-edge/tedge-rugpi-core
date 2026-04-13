@@ -7,10 +7,6 @@ recipes = [
     "raspi-tpm",
     "setup-pkcs11",
 
-    # use avahi instead of systemd-resolved due to
-    # an issue with high cpu usage
-    "avahi-daemon",
-
     # containers
     # use podman as docker has deprecated support for Raspberry OS and 
     # armhf (armv6) images, see https://docs.docker.com/engine/install/raspberry-pi-os/
@@ -24,11 +20,4 @@ recipes = [
 
     # SBOM
     "rugix-extra/simple-sbom",
-]
-
-# exclude specific recipes which are currently not supported on older versions
-# due to various issues
-exclude = [
-    # high cpu usage on rpi1
-    "systemd-resolved",
 ]

@@ -107,3 +107,16 @@ case "$MOSQUITTO_VERSION" in
         patch_mosquitto_2018
         ;;
 esac
+
+# Use default mosquitto settings so mosquitto is functional before connecting to a cloud
+install -D -m 644 -g mosquitto -o mosquitto "${RECIPE_DIR}/files/tedge-mosquitto.conf" -t /etc/mosquitto/conf.d/
+
+# add firewall rules to prevent other networks from accessing the 1883 port
+sudo mkdir -p /etc/nftables.d/
+install -D -m 0644 "${RECIPE_DIR}/files/firewall.conf" -T /etc/nftables.d/10-mosquitto.conf
+
+# Add include directive to nftables.conf if not already present
+if ! grep -qF 'include "/etc/nftables.d/*.conf"' /etc/nftables.conf; then
+    echo 'include "/etc/nftables.d/*.conf"' >> /etc/nftables.conf
+fi
+

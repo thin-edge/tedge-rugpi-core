@@ -5,8 +5,17 @@ FIRMWARE_VERSION=
 FIRMWARE_URL=
 MANUAL_DOWNLOAD=0
 STREAM_DOWNLOAD=auto
-NETRC_FILE="${NETRC_FILE:-"/etc/tedge/.netrc"}"
+NETRC_FILE="${NETRC_FILE:-}"
 CHECK_META_INFO=0
+
+if [ -z "$NETRC_FILE" ]; then
+    # check both the newer and old paths
+    if [ -f /etc/tedge/plugins/.netrc ]; then
+        NETRC_FILE="/etc/tedge/plugins/.netrc"
+    elif [ -f /etc/tedge/.netrc ]; then
+        NETRC_FILE="/etc/tedge/.netrc"
+    fi
+fi
 
 # Note: Use --insecure-skip-bundle-verification until signing is properly supported as users would be required to create a signing certificate
 SKIP_BUNDLE_VERIFICATION=${SKIP_BUNDLE_VERIFICATION:-1}

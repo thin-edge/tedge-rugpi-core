@@ -3,8 +3,9 @@ path = "/etc/tedge/tedge.toml"
 type = "tedge.toml"
 
 [[files]]
-path = "/etc/tedge/mosquitto-conf/tedge-mosquitto.conf"
+path = "/etc/mosquitto/conf.d/tedge-mosquitto.conf"
 type = "tedge-mosquitto.conf"
+service = "mosquitto"
 
 [[files]]
 path = "/etc/tedge/plugins/tedge-log-plugin.toml"
@@ -14,7 +15,7 @@ group = "tedge"
 mode = 0o0644
 
 [[files]]
-path = "/etc/tedge/.netrc"
+path = "/etc/tedge/plugins/.netrc"
 type = "netrc"
 user = "tedge"
 group = "tedge"
