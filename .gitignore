@@ -4,6 +4,8 @@ build.log
 image.sbom.txt
 sbom.txt
 .env
+.DS_Store
+wordlist.txt
 
 # test keys
 id_rsa
