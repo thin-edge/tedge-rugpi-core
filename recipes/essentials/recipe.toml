@@ -7,5 +7,6 @@ dependencies = [
     "tedge-bootstrap",
     "tedge-local-pki",
     "tedge-firmware-update",
+    "zero-touch",
     "mosquitto",
 ]
