@@ -2,5 +2,8 @@
 description = "zero touch provisioning"
 dependencies = [
     "core/pkg-update",
-    "tedge-community-repo",
+    "tedge-dev-repo",
 ]
+
+[parameters]
+disable_rfkill = { default = "true" }

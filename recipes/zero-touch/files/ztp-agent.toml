@@ -1,2 +1,2 @@
 [[persist]]
-file = "/var/lib/ztp/provisioned"
+directory = "/var/lib/ztp"
