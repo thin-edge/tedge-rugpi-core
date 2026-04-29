@@ -3,5 +3,4 @@ description = "zero touch provisioning"
 dependencies = [
     "core/pkg-update",
     "tedge-dev-repo",
-    # "disable-rfkill",   # disable rfkill service which can block the wifi from working
 ]
