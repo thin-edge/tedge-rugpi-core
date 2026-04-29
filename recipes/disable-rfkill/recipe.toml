@@ -1,0 +1,2 @@
+#:schema https://raw.githubusercontent.com/rugix/rugix-bakery/refs/tags/v0.9.0/schemas/rugix-bakery-recipe.schema.json
+description = "Disable rfkill to prevent it blocking wifi and bluetooth functionality"
