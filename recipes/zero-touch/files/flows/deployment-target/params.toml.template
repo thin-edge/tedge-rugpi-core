@@ -1,0 +1,4 @@
+interval = "10m"
+group = "bootstrap"
+version = "latest"
+max_attempts = "3"

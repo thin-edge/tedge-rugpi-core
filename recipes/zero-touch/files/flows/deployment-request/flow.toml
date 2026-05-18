@@ -1,0 +1,17 @@
+name = "deployment-request"
+version = "1.0.10"
+description = "Server-push deployment: calls /apply to trigger a C8y_DeviceProfile operation, then tracks fragments"
+
+# Periodic trigger: shell script calls the /apply endpoint.
+# On 201 the script echoes the JSON response body; on 204 it outputs nothing.
+[input.process]
+topic = "continuous-deployments/deployments/${params.group}/apply"
+command = """/etc/tedge/mappers/c8y/flows/deployment-request/deployment.sh --group ${params.group} --version ${params.version} --max-attempts ${params.max_attempts}"""
+interval = "${params.interval}"
+
+[config]
+group = "${params.group}"
+version = "${params.version}"
+
+[[steps]]
+script = "main.js"

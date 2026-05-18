@@ -1,0 +1,12 @@
+name = "deployment-track"
+version = "1.0.5"
+description = "track rollout manager operations and add the fragment so it can be tracked locally"
+
+# Subscribe to:
+#   1. te/device/main///cmd/device_profile/+ – thin-edge.io translated command status (updates state fragment)
+input.mqtt.topics = [
+    "te/device/main///cmd/device_profile/+",
+]
+
+[[steps]]
+script = "main.js"

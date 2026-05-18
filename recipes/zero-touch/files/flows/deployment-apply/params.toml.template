@@ -1,4 +1,0 @@
-group = ""
-c8y_proxy_client_host = "127.0.0.1"
-c8y_proxy_client_port = "8001"
-c8y_proxy_client_scheme = "http"
