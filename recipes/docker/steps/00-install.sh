@@ -34,6 +34,7 @@ apt-get update
 apt-get install -y --no-install-recommends \
     docker-ce \
     docker-ce-cli \
+    fuse-overlayfs \
     containerd.io \
     docker-buildx-plugin \
     docker-compose-plugin \
