@@ -9,3 +9,6 @@ usermod -a -G softhsm tedge
 # Add helper scripts
 install -m 0755 -d /usr/share/tedge-hsm/bin
 install -D -m 0755 "${RECIPE_DIR}/files/init-pkcs11.sh" -t /usr/bin/
+
+# default config
+install -D -m 0755 "${RECIPE_DIR}/files/tedge-p11-server.conf" -t /etc/tedge/plugins/
