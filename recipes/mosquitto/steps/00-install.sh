@@ -112,7 +112,7 @@ esac
 install -D -m 644 -g mosquitto -o mosquitto "${RECIPE_DIR}/files/tedge-mosquitto.conf" -t /etc/mosquitto/conf.d/
 
 # add firewall rules to prevent other networks from accessing the 1883 port
-mkdir -p /etc/nftables.d/
+install -m 0755 -d /etc/nftables.d/
 install -D -m 0644 "${RECIPE_DIR}/files/firewall.conf" -T /etc/nftables.d/10-mosquitto.conf
 
 # Add include directive to nftables.conf if not already present
@@ -120,5 +120,14 @@ if ! grep -qF 'include "/etc/nftables.d/*.conf"' /etc/nftables.conf; then
     echo 'include "/etc/nftables.d/*.conf"' >> /etc/nftables.conf
 fi
 
+# non-image related changes that are persisted across upgrades
+install -m 0755 -d /etc/nftables.d/addons
+if ! grep -qF 'include "/etc/nftables.d/addons/*.conf"' /etc/nftables.conf; then
+    echo 'include ""/etc/nftables.d/addons/*.conf"' >> /etc/nftables.conf
+fi
+
 # enable firewall
 systemctl enable nftables.service
+
+# Copy persistence file
+install -D -m 644 "${RECIPE_DIR}/files/firewall.toml" -t /etc/rugix/state
