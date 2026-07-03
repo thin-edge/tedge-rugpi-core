@@ -1,3 +1,4 @@
 {
+    "storage-driver": "fuse-overlayfs",
     "log-driver": "journald"
 }
