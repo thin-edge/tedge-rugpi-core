@@ -1,0 +1,4 @@
+# Make the I2C devices accessible to members of the "i2c" group.
+# Raspberry Pi OS ships an equivalent rule, this is included so the recipe
+# does not depend on the base image providing one.
+SUBSYSTEM=="i2c-dev", GROUP="i2c", MODE="0660"

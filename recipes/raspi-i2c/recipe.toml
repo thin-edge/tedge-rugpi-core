@@ -1,0 +1,11 @@
+#:schema https://raw.githubusercontent.com/rugix/rugix-bakery/refs/tags/v0.9.0/schemas/rugix-bakery-recipe.schema.json
+description = "Enable the I2C bus (dtparam=i2c_arm) and grant the tedge user access to it"
+dependencies = [
+    "core/pkg-update",
+    "thin-edge.io",
+]
+
+[parameters]
+# Optional bus speed in Hz, e.g. 400000 for fast mode.
+# Leave blank to use the firmware default (100000).
+baudrate = { default = "" }

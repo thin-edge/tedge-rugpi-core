@@ -5,6 +5,7 @@ recipes = [
     "core/rpi-raspios-setup",
     "defaults",
     "raspi-tpm",
+    "raspi-i2c",
     "setup-pkcs11",
 
     # containers
